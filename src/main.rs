@@ -3,6 +3,9 @@
 #[macro_use] extern crate rocket;
 #[macro_use] extern crate serde_derive;
 
+#[cfg(test)] mod tests;
+
+use std::fmt;
 use std::collections::HashMap;
 
 use rocket::Request;
@@ -10,6 +13,7 @@ use rocket_contrib::templates::Template;
 use rocket_contrib::serve::StaticFiles;
 
 mod base;
+pub mod shop;
 
 #[derive(Serialize)]
 struct TemplateContext {
