@@ -7,6 +7,7 @@ use std::collections::HashMap;
 
 use rocket::Request;
 use rocket_contrib::templates::Template;
+use rocket_contrib::serve::StaticFiles;
 
 mod base;
 
@@ -18,6 +19,7 @@ struct TemplateContext {
 
 fn main() {
     rocket::ignite()
+           .mount("/", StaticFiles::from("templates"))
            .mount("/", routes![base::index])
            .attach(Template::fairing())
            .register(catchers![base::not_found])
