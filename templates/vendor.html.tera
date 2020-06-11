@@ -1,0 +1,7 @@
+{% extends "base" %}
+
+{% block content %}
+    <h1>Vendor 1: {{name}}</h1>
+    <p>Best prices this side of the http</p>
+    <br/>
+{% endblock content %}

@@ -1,6 +1,9 @@
-#[derive(Debug)]
+use rocket::State;
+use rocket_contrib::templates::Template;
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Item {
-    pub name: &'static str,
+    pub name: String,
     pub price: f64,
     count: u32
 }
@@ -8,7 +11,7 @@ pub struct Item {
 impl Item {
     pub fn get_count(&self) -> u32 { self.count }
     
-    pub fn new(name: &'static str, price: f64, count: u32) -> Item {
+    pub fn new(name: String, price: f64, count: u32) -> Item {
         Item { name, price, count }
     }
 
@@ -33,34 +36,35 @@ impl PartialEq for Item {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Vendor {
-    pub name: &'static str,
+    pub name: String,
     pub bits: u32,
     pub items: Vec<Item>
 }
 
 impl Vendor {
-    pub fn new(name: &'static str, bits: u32) -> Vendor{
+    pub fn new(name: String, bits: u32) -> Vendor{
         Vendor{ name, bits, items: vec![] }
     }
 
-    fn contains(&mut self, name: &'static str) -> Option<&mut Item> {
-        self.items.iter_mut().find(|i| i.name == name)
+    fn contains(&mut self, name: &String) -> Option<&mut Item> {
+        self.items.iter_mut().find(|i| &i.name == name)
     }
 
     pub fn add_item(&mut self, item: Item) {
-        if let Some(i) = self.contains(item.name) {
+        if let Some(i) = self.contains(&item.name) {
             i.stock_item(item.get_count());
         } else {
             self.items.push(item);
         }
     }
 
-    pub fn get_item(&self, name: &'static str) -> Option<&Item> {
-        self.items.iter().find(|i| i.name == name)
+    pub fn get_item(&self, name: &String) -> Option<&Item> {
+        self.items.iter().find(|i| &i.name == name)
     }
 
-    pub fn purchase_item(&mut self, item: &'static str, count: u32) {
+    pub fn purchase_item(&mut self, item: &String, count: u32) {
         if let Some(i) = self.contains(item) {
             i.sell_item(count)
         }
@@ -87,4 +91,11 @@ impl super::fmt::Debug for Vendor {
          .field("Items", &self.items)
          .finish()
     }
+}
+
+#[get("/vendors")]
+pub fn vender_home(market: State<super::Market>) -> Template {
+    let mut v = super::HashMap::new();
+    v.insert("vendors", &market.vendors);
+    Template::render("market", v)
 }

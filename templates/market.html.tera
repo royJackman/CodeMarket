@@ -1,0 +1,20 @@
+{% extends "base" %}
+
+{% block content %}
+    <h1>Available vendors</h1>
+    <p>Here are your vendors, aranged in random order, for your convenience</p>
+    {% for v in vendors %}
+        <div>
+            <h3>{{ v.name }}</h3>
+            <p>Items for sale:</p>
+            <ul>
+                {% for i in v.items %}
+                    <li>
+                        <h4>{{ i.name }}</h4>
+                        <span>{{ i.price }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+{% endblock content %}

@@ -940,6 +940,7 @@ dependencies = [
 name = "rust_market"
 version = "0.1.0"
 dependencies = [
+ "rand",
  "rocket",
  "rocket_contrib",
  "serde",
