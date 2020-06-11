@@ -12,8 +12,16 @@ impl Item {
         Item { name, price, count }
     }
 
-    fn stock_item(&mut self, count: u32){
+    fn stock_item(&mut self, count: u32) {
         self.count += count
+    }
+
+    fn sell_item(&mut self, count: u32) {
+        if self.count >= count {
+            self.count -= count
+        } else {
+            self.count = 0
+        }
     }
 }
 
@@ -36,15 +44,25 @@ impl Vendor {
         Vendor{ name, bits, items: vec![] }
     }
 
-    fn contains(&mut self, item:&Item) -> Option<&mut Item> {
-        self.items.iter_mut().find(|i| i.name == item.name)
+    fn contains(&mut self, name: &'static str) -> Option<&mut Item> {
+        self.items.iter_mut().find(|i| i.name == name)
     }
 
     pub fn add_item(&mut self, item: Item) {
-        if let Some(i) = self.contains(&item) {
+        if let Some(i) = self.contains(item.name) {
             i.stock_item(item.get_count());
         } else {
             self.items.push(item);
+        }
+    }
+
+    pub fn get_item(&self, name: &'static str) -> Option<&Item> {
+        self.items.iter().find(|i| i.name == name)
+    }
+
+    pub fn purchase_item(&mut self, item: &'static str, count: u32) {
+        if let Some(i) = self.contains(item) {
+            i.sell_item(count)
         }
     }
 }
