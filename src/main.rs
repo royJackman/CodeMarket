@@ -32,7 +32,7 @@ impl Market {
         Market{ vendors: vec![] }
     }
     
-    pub fn spawn_vendors(&mut self, count: usize) {
+    fn spawn_vendors(&mut self, count: usize) {
         let mut rng = rand::thread_rng();
         for i in 0..count {
             let mut temp_vendor = shop::Vendor::new(format!("vendor_{}", i), rng.gen_range(700, 1300));
@@ -41,6 +41,10 @@ impl Market {
             }
             self.vendors.push(temp_vendor);
         }
+    }
+
+    pub fn get_vendor(&self, name: &String) -> Option<&shop::Vendor> {
+        self.vendors.iter().find(|v| &v.name == name)
     }
 }
 
@@ -51,7 +55,8 @@ fn main() {
     rocket::ignite()
            .manage( market )
            .mount("/", StaticFiles::from("templates"))
-           .mount("/", routes![base::index, shop::vender_home])
+           .mount("/", routes![base::index])
+           .mount("/vendors", routes![shop::vender_home, shop::vendor])
            .attach(Template::fairing())
            .register(catchers![base::not_found])
            .launch();

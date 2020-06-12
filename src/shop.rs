@@ -93,9 +93,25 @@ impl super::fmt::Debug for Vendor {
     }
 }
 
-#[get("/vendors")]
+#[get("/")]
 pub fn vender_home(market: State<super::Market>) -> Template {
-    let mut v = super::HashMap::new();
-    v.insert("vendors", &market.vendors);
-    Template::render("market", v)
+    let mut map = super::HashMap::new();
+    map.insert("vendors", &market.vendors);
+    Template::render("market", map)
+}
+
+#[get("/<name>")]
+pub fn vendor(name: String, market: State<super::Market>) -> Template {
+    match market.get_vendor(&name) {
+        Some(v) => {
+            let mut map = super::HashMap::new();
+            map.insert("vendor", &v);
+            Template::render("vendor", map)
+        }
+        None => {
+            let mut map = super::HashMap::new();
+            map.insert("path", &name);
+            Template::render("error/404", map)
+        }
+    }
 }
