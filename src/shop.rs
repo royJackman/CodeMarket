@@ -101,17 +101,17 @@ pub fn vender_home(market: State<super::Market>) -> Template {
 }
 
 #[get("/<name>")]
-pub fn vendor(name: String, market: State<super::Market>) -> Template {
-    match market.get_vendor(&name) {
+pub fn vendor(name: String, market: State<super::Market>) -> Option<Template> {
+    match &market.get_vendor(&name) {
         Some(v) => {
             let mut map = super::HashMap::new();
             map.insert("vendor", &v);
-            Template::render("vendor", map)
+            Some(Template::render("vendor", map))
         }
         None => {
             let mut map = super::HashMap::new();
             map.insert("path", &name);
-            Template::render("error/404", map)
+            Some(Template::render("error/404", map))
         }
     }
 }

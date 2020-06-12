@@ -1,7 +1,7 @@
 {% extends "base" %}
 
 {% block content %}
-    <h1>Vendor 1: {{ vendor.name }}</h1>
+    <h1>Vendor: {{ vendor.name }}</h1>
     <p>Best prices this side of the http</p>
     <br/>
     <ul>
