@@ -35,7 +35,7 @@ impl Market {
     fn spawn_vendors(&mut self, count: usize) {
         let mut rng = rand::thread_rng();
         for i in 0..count {
-            let mut temp_vendor = shop::Vendor::new(format!("vendor_{}", i), rng.gen_range(700, 1300));
+            let mut temp_vendor = shop::Vendor::new(format!("Vendor {}", i), format!("vendor_{}", i), rng.gen_range(700, 1300));
             for j in 0..rng.gen_range(4,7) {
                 temp_vendor.items.push(shop::Item::new(format!("item_{}", j), rng.gen_range(1.0, 10.0), rng.gen_range(30, 70)))
             }
@@ -45,6 +45,9 @@ impl Market {
 
     pub fn get_vendor(&self, name: &String) -> Option<&shop::Vendor> {
         self.vendors.iter().find(|v| &v.name == name)
+    }
+    pub fn get_vendor_by_url(&self, url: &String) -> Option<&shop::Vendor> {
+        self.vendors.iter().find(|v| &v.url == url)
     }
 }
 

@@ -8,11 +8,20 @@
                 background: rgb(75,75,75);
                 margin: 0;
             }
-            div.navbar ul {
+            ul {
                 list-style-type: none;
                 margin: 0;
                 padding: 0;
                 overflow: hidden;
+            }
+            a {
+                text-decoration: none;
+            }
+            a:visited { 
+                text-decoration: none;
+                color: black;
+            }
+            div.navbar ul {
                 background-color: #333;
             }
             div.navbar li { float: left; }

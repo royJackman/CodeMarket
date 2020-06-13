@@ -1,12 +1,11 @@
+use rocket::State;
 use rocket_contrib::templates::Template;
 
 #[get("/")]
-pub fn index() -> Template {
-    let context = super::TemplateContext { 
-        name: String::from("Steve"), 
-        items: vec!["Flask", "Lightsaber", "Sticky notes"]
-    };
-    Template::render("index", &context)
+pub fn index(market: State<super::Market>) -> Template {
+    let mut map = super::HashMap::new();
+    map.insert("market", market.inner());
+    Template::render("index", &map)
 }
 
 #[catch(404)]

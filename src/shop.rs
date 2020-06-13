@@ -39,13 +39,14 @@ impl PartialEq for Item {
 #[derive(Serialize, Deserialize)]
 pub struct Vendor {
     pub name: String,
+    pub url: String,
     pub bits: u32,
     pub items: Vec<Item>
 }
 
 impl Vendor {
-    pub fn new(name: String, bits: u32) -> Vendor{
-        Vendor{ name, bits, items: vec![] }
+    pub fn new(name: String, url: String, bits: u32) -> Vendor{
+        Vendor{ name, url, bits, items: vec![] }
     }
 
     fn contains(&mut self, name: &String) -> Option<&mut Item> {
@@ -74,6 +75,7 @@ impl Vendor {
 impl PartialEq for Vendor {
     fn eq(&self, other: &Self) -> bool{
         self.name == other.name &&
+        self.url == other.url &&
         self.bits == other.bits &&
         self.items.len() == other.items.len() &&
         self.items.iter()
@@ -86,6 +88,7 @@ impl super::fmt::Debug for Vendor {
     fn fmt(&self, f: &mut super::fmt::Formatter<'_>) -> super::fmt::Result {
         f.debug_struct("Vendor")
          .field("Name", &self.name)
+         .field("Url", &self.url)
          .field("Bits", &self.bits)
          .field("Item Count", &self.items.len())
          .field("Items", &self.items)
@@ -100,18 +103,18 @@ pub fn vender_home(market: State<super::Market>) -> Template {
     Template::render("market", map)
 }
 
-#[get("/<name>")]
-pub fn vendor(name: String, market: State<super::Market>) -> Option<Template> {
-    match &market.get_vendor(&name) {
+#[get("/<url>")]
+pub fn vendor(url: String, market: State<super::Market>) -> Template {
+    match &market.get_vendor_by_url(&url) {
         Some(v) => {
             let mut map = super::HashMap::new();
             map.insert("vendor", &v);
-            Some(Template::render("vendor", map))
+            Template::render("vendor", map)
         }
         None => {
             let mut map = super::HashMap::new();
-            map.insert("path", &name);
-            Some(Template::render("error/404", map))
+            map.insert("path", &url);
+            Template::render("error/404", map)
         }
     }
 }
