@@ -15,6 +15,7 @@ use rocket_contrib::serve::StaticFiles;
 
 mod base;
 pub mod shop;
+pub mod purchase;
 
 #[derive(Serialize)]
 struct TemplateContext {
@@ -62,7 +63,7 @@ fn main() {
            .manage( market )
            .mount("/", StaticFiles::from("templates"))
            .mount("/", routes![base::index])
-           .mount("/vendors", routes![shop::vender_home, shop::vendor])
+           .mount("/vendors", routes![shop::vender_home, shop::vendor, purchase::purchase])
            .attach(Template::fairing())
            .register(catchers![base::not_found])
            .launch();
