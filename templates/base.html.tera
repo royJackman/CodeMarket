@@ -12,17 +12,27 @@
                 list-style-type: none;
                 margin: 0;
                 padding: 0;
-                overflow: hidden;
             }
             a {
                 text-decoration: none;
+                text-align: center;
             }
             a:visited { 
                 text-decoration: none;
                 color: black;
             }
+            a.button {
+                background-color: rgb(65, 65, 65);
+                border-radius: 5px;
+                border: none;
+                float: left;
+                font-size: 20px;
+                padding: 14px;
+                margin: 6px;
+            }
             div.navbar ul {
                 background-color: #333;
+                overflow: hidden;
             }
             div.navbar li { float: left; }
             div.navbar li a {

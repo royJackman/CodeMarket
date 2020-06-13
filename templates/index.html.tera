@@ -7,7 +7,7 @@
     <h3>Available Vendors:</h3>
     <ul>
         {% for v in market.vendors -%}
-            <li><a href="/vendors/{{ v.url }}">{{v.name}}</a></li>
+            <li><a class="button" href="/vendors/{{ v.url }}">{{v.name}}</a></li>
         {% endfor -%}
     </ul>
 {% endblock content %}
