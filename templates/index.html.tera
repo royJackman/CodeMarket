@@ -3,7 +3,6 @@
 {% block content %}
     <h1>The Rust Market</h1>
     <p>Here we sell Rust primitives for bits</p>
-    <br/>
     <h3>Available Vendors:</h3>
     <ul>
         {% for v in market.vendors -%}

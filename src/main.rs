@@ -37,7 +37,10 @@ impl Market {
         for i in 0..count {
             let mut temp_vendor = shop::Vendor::new(format!("Vendor {}", i), format!("vendor_{}", i), rng.gen_range(700, 1300));
             for j in 0..rng.gen_range(4,7) {
-                temp_vendor.items.push(shop::Item::new(format!("item_{}", j), rng.gen_range(1.0, 10.0), rng.gen_range(30, 70)))
+                temp_vendor.items.push(shop::Item::new(
+                    format!("item_{}", j), 
+                    ((rng.gen_range(1.0, 10.0) as f64) * 100.0).round() / 100.0, 
+                    rng.gen_range(30, 70)))
             }
             self.vendors.push(temp_vendor);
         }
@@ -54,7 +57,7 @@ impl Market {
 
 fn main() {
     let mut market = Market::new();
-    market.spawn_vendors(3);
+    market.spawn_vendors(5);
     rocket::ignite()
            .manage( market )
            .mount("/", StaticFiles::from("templates"))

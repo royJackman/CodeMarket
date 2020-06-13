@@ -1,15 +1,14 @@
 {% extends "base" %}
 
 {% block content %}
-    <h1>Vendor: {{ vendor.name }}</h1>
+    <h1>{{ vendor.name }}</h1>
     <p>Best prices this side of the http</p>
     <br/>
     <ul>
-        {% for item in vendor.items %}
+        {% for item in vendor.items -%}
             <li>
-                <h3>{{ item.name }}</h3>
-                <p><strong>{{ item.price }}</strong></p>
+                <p><strong>{{ item.name }}:</strong> {{ item.price }}</p>
             </li>
-        {% endfor %}
+        {% endfor -%}
     </ul>
 {% endblock content %}
