@@ -10,15 +10,15 @@ fn test_new_item() {
 
 #[test]
 fn test_new_vendor() {
-    let v = Vendor::new(String::from("test_vendor"), 100);
-    assert_eq!(&v.name[..], "test_vendor");
+    let v = Vendor::new(String::from("Test Vendor"), String::from("test_vendor"), 100);
+    assert_eq!(&v.name[..], "Test Vendor");
     assert_eq!(v.bits, 100);
     assert_eq!(v.items, vec![]);
 }
 
 #[test]
 fn test_vendor_add_item() {
-    let v = &mut Vendor::new(String::from("vendor"), 1000);
+    let v = &mut Vendor::new(String::from("Vendor"), String::from("vendor"), 1000);
     v.add_item(Item::new(String::from("f32"), 32.0, 100));
     let item = v.get_item(&String::from("f32")).unwrap();
     assert_eq!(item.price, 32.0);
@@ -28,7 +28,7 @@ fn test_vendor_add_item() {
 #[test]
 #[allow(non_snake_case)]
 fn test_vendor_purchase_item() {
-    let v = &mut Vendor::new(String::from("vendor"), 1000);
+    let v = &mut Vendor::new(String::from("Vendor"), String::from("vendor"), 1000);
     let F32 = String::from("f32");
     let U8 = String::from("u8");
     let STR = String::from("str");
