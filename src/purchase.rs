@@ -82,15 +82,63 @@ impl<'a> FromData<'a> for OrderData<'a> {
 #[post("/purchase", format="application/json", data="<order_data>")]
 pub fn purchase(order_data: OrderData, market: State<super::Market>) -> content::Json<String> {
     let order = Order::from_data(order_data);
-    for v in &market.vendors {
-        match v.get_item(&order.item) {
-            Some(i) => println!("Found {} at {} for {}", i.name, v.name, i.price),
-            None => println!("Did not find {} at {}", order.item, v.name)
+    let mut vendors = (*market).vendors.lock().unwrap();
+    let mut from_pos = usize::MAX;
+    let mut to_pos = usize::MAX;
+
+    for (i,v) in vendors.iter().enumerate() {
+        if v.url == order.from { from_pos = i }
+        if v.url == order.to { to_pos = i }
+    }
+
+    if from_pos == usize::MAX || to_pos == usize::MAX {
+        return content::Json(format!("{} \"error\":\"One or more of the vendors in this order do not exist\" {}", "{", "}"));
+    }
+
+    let mut item_price: f64 = 0.0;
+    let mut item_found: bool = false;
+    let mut from_name: String = String::from("");
+    {
+        let from = vendors.get(from_pos).unwrap();
+        from_name = from.name.clone();
+        item_found = match from.get_item(&order.item) {
+            Some(i) => {
+                item_price = i.price;
+                true
+            }, 
+            None => false
+        };
+    }
+    
+    let mut to_bits: f64 = 0.0;
+    let mut to_name: String = String::from("");
+    {
+        let to = vendors.get(to_pos).unwrap();
+        to_bits = to.bits;
+        to_name = to.name.clone();
+    }
+
+    let total = item_price * (order.count as f64);
+    let mut understock = 0;
+    let mut success = false;
+
+    if item_found && (to_bits >= total) {
+        success = true;
+        {
+            let to_vendor = vendors.get_mut(to_pos).unwrap();
+            to_vendor.add_item(super::shop::Item::new(order.item.clone(), item_price, order.count));
+            to_vendor.bits -= total;
+        }
+        {
+            let from_vendor = vendors.get_mut(from_pos).unwrap();
+            understock = match from_vendor.purchase_item(&order.item, order.count) {
+                Ok(u) => u, Err(_) => 0
+            }
         }
     }
 
     content::Json(format!(
-        "{} \"item\": \"{}\", \"count\": \"{}\", \"from\": \"{}\", \"to\":\"{}\" {}",
-        "{", order.item, order.count, order.from, order.to, "}"
+        "{} \"success\": \"{}\", \"total\": \"{}\", \"understock\": \"{}\", \"from\":\"{}\", \"to\":\"{}\" {}",
+        "{", success, total, understock, from_name, to_name, "}"
     ))
 }

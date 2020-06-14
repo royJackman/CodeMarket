@@ -1,6 +1,10 @@
 use rocket::State;
 use rocket_contrib::templates::Template;
 
+pub enum ShopError {
+    ItemNotFound
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Item {
     pub name: String,
@@ -19,11 +23,14 @@ impl Item {
         self.count += count
     }
 
-    fn sell_item(&mut self, count: u32) {
+    fn sell_item(&mut self, count: u32) -> u32 {
         if self.count >= count {
-            self.count -= count
+            self.count -= count;
+            0
         } else {
-            self.count = 0
+            let retval = count - self.count;
+            self.count = 0;
+            retval
         }
     }
 }
@@ -40,21 +47,24 @@ impl PartialEq for Item {
 pub struct Vendor {
     pub name: String,
     pub url: String,
-    pub bits: u32,
+    pub bits: f64,
     pub items: Vec<Item>
 }
 
 impl Vendor {
-    pub fn new(name: String, url: String, bits: u32) -> Vendor{
+    pub fn new(name: String, url: String, bits: f64) -> Vendor{
         Vendor{ name, url, bits, items: vec![] }
     }
 
-    fn contains(&mut self, name: &String) -> Option<&mut Item> {
-        self.items.iter_mut().find(|i| &i.name == name)
+    pub fn contains(&mut self, name: &String) -> bool {
+        match self.get_item(name) {
+            Some(_) => true,
+            None => false
+        }
     }
 
     pub fn add_item(&mut self, item: Item) {
-        if let Some(i) = self.contains(&item.name) {
+        if let Some(i) = self.grab_item(&item.name) {
             i.stock_item(item.get_count());
         } else {
             self.items.push(item);
@@ -65,9 +75,15 @@ impl Vendor {
         self.items.iter().find(|i| &i.name == name)
     }
 
-    pub fn purchase_item(&mut self, item: &String, count: u32) {
-        if let Some(i) = self.contains(item) {
-            i.sell_item(count)
+    pub fn grab_item(&mut self, name: &String) -> Option<&mut Item> {
+        self.items.iter_mut().find(|i| &i.name == name)
+    }
+
+    pub fn purchase_item(&mut self, item: &String, count: u32) -> Result<u32, ShopError> {
+        if let Some(i) = self.grab_item(item) {
+            Ok(i.sell_item(count))
+        } else {
+            Err(ShopError::ItemNotFound)
         }
     }
 }
@@ -105,7 +121,7 @@ pub fn vender_home(market: State<super::Market>) -> Template {
 
 #[get("/<url>")]
 pub fn vendor(url: String, market: State<super::Market>) -> Template {
-    match &market.get_vendor_by_url(&url) {
+    match market.vendors.lock().unwrap().iter().find(|x| x.url == url) {
         Some(v) => {
             let mut map = super::HashMap::new();
             map.insert("vendor", &v);
