@@ -96,22 +96,24 @@ pub fn purchase(order_data: OrderData, market: State<super::Market>) -> content:
     }
 
     let mut item_price: f64 = 0.0;
-    let mut item_found: bool = false;
-    let mut from_name: String = String::from("");
+    let mut item_count: u32 = 0;
+    let item_found: bool;
+    let from_name: String;
     {
         let from = vendors.get(from_pos).unwrap();
         from_name = from.name.clone();
         item_found = match from.get_item(&order.item) {
             Some(i) => {
                 item_price = i.price;
+                item_count = i.get_count();
                 true
             }, 
             None => false
         };
     }
     
-    let mut to_bits: f64 = 0.0;
-    let mut to_name: String = String::from("");
+    let to_bits: f64;
+    let to_name: String;
     {
         let to = vendors.get(to_pos).unwrap();
         to_bits = to.bits;
@@ -122,18 +124,18 @@ pub fn purchase(order_data: OrderData, market: State<super::Market>) -> content:
     let mut understock = 0;
     let mut success = false;
 
-    if item_found && (to_bits >= total) {
+    if item_found && (to_bits >= total) && item_count > 0 {
         success = true;
-        {
-            let to_vendor = vendors.get_mut(to_pos).unwrap();
-            to_vendor.add_item(super::shop::Item::new(order.item.clone(), item_price, order.count));
-            to_vendor.bits -= total;
-        }
         {
             let from_vendor = vendors.get_mut(from_pos).unwrap();
             understock = match from_vendor.purchase_item(&order.item, order.count) {
                 Ok(u) => u, Err(_) => 0
             }
+        }
+        {
+            let to_vendor = vendors.get_mut(to_pos).unwrap();
+            to_vendor.add_item(super::shop::Item::new(order.item.clone(), item_price, order.count));
+            to_vendor.bits -= total - (item_price * (understock as f64));
         }
     }
 
