@@ -1,4 +1,7 @@
 use std::io::{self, Read};
+use std::fmt::Display;
+use std::collections::BTreeMap;
+
 use rocket::response::content;
 use rocket::{State, Request, Data, Outcome::*};
 use rocket::data::{FromData, Outcome, Transform, Transformed};
@@ -139,8 +142,12 @@ pub fn purchase(order_data: OrderData, market: State<super::Market>) -> content:
         }
     }
 
-    content::Json(format!(
-        "{} \"success\": \"{}\", \"total\": \"{}\", \"understock\": \"{}\", \"from\":\"{}\", \"to\":\"{}\" {}",
-        "{", success, total, understock, from_name, to_name, "}"
-    ))
+    let mut vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();
+    vars.insert("success".to_string(), Box::new(success));
+    vars.insert("total".to_string(), Box::new(total));
+    vars.insert("understock".to_string(), Box::new(understock));
+    vars.insert("from".to_string(), Box::new(from_name));
+    vars.insert("to".to_string(), Box::new(to_name));
+
+    super::util::construct_json(&vars)
 }

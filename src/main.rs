@@ -17,6 +17,7 @@ use rocket_contrib::serve::StaticFiles;
 mod base;
 pub mod shop;
 pub mod purchase;
+pub mod util;
 
 #[derive(Serialize)]
 struct TemplateContext {
