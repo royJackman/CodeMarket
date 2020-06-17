@@ -42,8 +42,9 @@ impl Market {
             for j in 0..rng.gen_range(4,7) {
                 temp_vendor.items.push(shop::Item::new(
                     format!("item_{}", j), 
-                    ((rng.gen_range(1.0, 10.0) as f64) * 100.0).round() / 100.0, 
-                    rng.gen_range(30, 70)))
+                    rng.gen_range(1.0, 10.0), 
+                    rng.gen_range(30, 70)
+                ))
             }
             self.vendors.get_mut().unwrap().push(temp_vendor);
         }
