@@ -86,68 +86,88 @@ impl<'a> FromData<'a> for OrderData<'a> {
 pub fn purchase(order_data: OrderData, market: State<super::Market>) -> content::Json<String> {
     let order = Order::from_data(order_data);
     let mut vendors = (*market).vendors.lock().unwrap();
-    let mut from_pos = usize::MAX;
-    let mut to_pos = usize::MAX;
+    let mut seller_pos = usize::MAX;
+    let mut buyer_pos = usize::MAX;
+    let mut output_vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();
 
     for (i,v) in vendors.iter().enumerate() {
-        if v.url == order.from { from_pos = i }
-        if v.url == order.to { to_pos = i }
+        if v.url == order.from { seller_pos = i }
+        if v.url == order.to { buyer_pos = i }
     }
 
-    if from_pos == usize::MAX || to_pos == usize::MAX {
-        return content::Json(format!("{} \"error\":\"One or more of the vendors in this order do not exist\" {}", "{", "}"));
+    if seller_pos == usize::MAX {
+        output_vars.insert("seller".to_string(), Box::new("not found".to_string()));
+    }
+    if buyer_pos == usize::MAX {
+        output_vars.insert("buyer".to_string(), Box::new("not found".to_string()));
+    }
+    if output_vars.len() > 0 {
+        return super::util::construct_json(&output_vars)
     }
 
     let mut item_price: f64 = 0.0;
     let mut item_count: u32 = 0;
     let item_found: bool;
-    let from_name: String;
+    let seller_name: String;
     {
-        let from = vendors.get(from_pos).unwrap();
-        from_name = from.name.clone();
+        let from = vendors.get(seller_pos).unwrap();
+        seller_name = from.name.clone();
         item_found = match from.get_item(&order.item) {
             Some(i) => {
                 item_price = i.price;
-                item_count = i.get_count();
+                item_count = match i.get_count() {
+                    0 => {
+                        output_vars.insert("item".to_string(), Box::new("out of stock".to_string()));
+                        return super::util::construct_json(&output_vars)
+                    }
+                    x => x
+                };
                 true
             }, 
-            None => false
+            None => {
+                output_vars.insert("item".to_string(), Box::new("not found at seller".to_string()));
+                return super::util::construct_json(&output_vars)
+            }
         };
     }
     
-    let to_bits: f64;
-    let to_name: String;
+    let buyer_bits: f64;
+    let buyer_name: String;
     {
-        let to = vendors.get(to_pos).unwrap();
-        to_bits = to.bits;
-        to_name = to.name.clone();
+        let to = vendors.get(buyer_pos).unwrap();
+        buyer_bits = to.bits;
+        buyer_name = to.name.clone();
     }
 
     let total = item_price * (order.count as f64);
+    if total > buyer_bits {
+        output_vars.insert("buyer".to_string(), Box::new("cannot afford the purchase".to_string()));
+        return super::util::construct_json(&output_vars)
+    }
+
     let mut understock = 0;
     let mut success = false;
 
-    if item_found && (to_bits >= total) && item_count > 0 {
+    if item_found && (buyer_bits >= total) && item_count > 0 {
         success = true;
         {
-            let from_vendor = vendors.get_mut(from_pos).unwrap();
+            let from_vendor = vendors.get_mut(seller_pos).unwrap();
             understock = match from_vendor.purchase_item(&order.item, order.count) {
                 Ok(u) => u, Err(_) => 0
             }
         }
         {
-            let to_vendor = vendors.get_mut(to_pos).unwrap();
+            let to_vendor = vendors.get_mut(buyer_pos).unwrap();
             to_vendor.add_item(super::shop::Item::new(order.item.clone(), item_price, order.count));
             to_vendor.bits -= total - (item_price * (understock as f64));
         }
     }
 
-    let mut vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();
-    vars.insert("success".to_string(), Box::new(success));
-    vars.insert("total".to_string(), Box::new(total));
-    vars.insert("understock".to_string(), Box::new(understock));
-    vars.insert("from".to_string(), Box::new(from_name));
-    vars.insert("to".to_string(), Box::new(to_name));
+    output_vars.insert("success".to_string(), Box::new(success));
+    output_vars.insert("total".to_string(), Box::new(total));
+    output_vars.insert("understock".to_string(), Box::new(understock));
+    output_vars.insert("seller".to_string(), Box::new(seller_name));
+    output_vars.insert("buyer".to_string(), Box::new(buyer_name));
 
-    super::util::construct_json(&vars)
+    super::util::construct_json(&output_vars)
 }
