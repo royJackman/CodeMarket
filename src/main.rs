@@ -16,6 +16,7 @@ use rocket_contrib::serve::StaticFiles;
 
 mod base;
 mod ledger;
+mod authorization;
 pub mod shop;
 pub mod purchase;
 pub mod util;
