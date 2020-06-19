@@ -15,6 +15,7 @@ use rocket_contrib::templates::Template;
 use rocket_contrib::serve::StaticFiles;
 
 mod base;
+mod ledger;
 pub mod shop;
 pub mod purchase;
 pub mod util;
