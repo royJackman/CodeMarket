@@ -3,6 +3,8 @@
 #[macro_use] extern crate rocket;
 #[macro_use] extern crate serde_derive;
 
+extern crate nanoid;
+
 #[cfg(test)] mod tests;
 
 use rand::Rng;
