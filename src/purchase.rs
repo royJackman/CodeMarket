@@ -84,7 +84,7 @@ impl<'a> FromData<'a> for OrderData<'a> {
 }
 
 #[post("/purchase", format="application/json", data="<order_data>")]
-pub fn purchase(order_data: OrderData, market: State<super::Market>) -> content::Json<String> {
+pub fn purchase(order_data: OrderData, market: State<super::ledger::Ledger>) -> content::Json<String> {
     let order = Order::from_data(order_data);
     let mut vendors = (*market).vendors.lock().unwrap();
     let mut seller_pos = usize::MAX;

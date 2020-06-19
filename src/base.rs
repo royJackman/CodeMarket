@@ -1,10 +1,11 @@
 use rocket::State;
+use super::ledger::Ledger;
 use rocket_contrib::templates::Template;
 
 #[get("/")]
-pub fn index(market: State<super::Market>) -> Template {
+pub fn index(ledger: State<Ledger>) -> Template {
     let mut map = super::HashMap::new();
-    map.insert("market", market.inner());
+    map.insert("market", ledger.inner());
     Template::render("index", &map)
 }
 

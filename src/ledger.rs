@@ -25,8 +25,8 @@ impl Entry {
 #[derive(Serialize)]
 pub struct Ledger {
     pub version: u32,
+    pub vendors: Mutex<Vec<Vendor>>,
     entries: Mutex<Vec<Entry>>,
-    vendors: Mutex<Vec<Vendor>>,
     vendor_ids: Mutex<Vec<String>>,
     vendor_versions: Mutex<Vec<u32>>
 }
@@ -42,7 +42,7 @@ impl Ledger {
         }
     }
 
-    fn register_vendor(&mut self, name: String, url: Option<String>) -> Result<String, LedgerError> {
+    pub fn register_vendor(&mut self, name: String, url: Option<String>) -> Result<String, LedgerError> {
         let mut url = url;
 
         {

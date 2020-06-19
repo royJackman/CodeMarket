@@ -64,13 +64,15 @@ impl Market {
 
 
 fn main() {
-    let mut market = Market::new();
-    market.spawn_vendors(5);
+    let mut session_ledger = ledger::Ledger::new();
+    let id = session_ledger.register_vendor("New Vendor".to_string(), None).unwrap_or("".to_string());
+    println!("{}", id);
+
     rocket::ignite()
-           .manage( market )
+           .manage( session_ledger )
            .mount("/", StaticFiles::from("templates"))
            .mount("/", routes![base::index])
-           .mount("/vendors", routes![shop::vender_home, shop::vendor, purchase::purchase])
+           .mount("/vendors", routes![shop::market_home, shop::vendor, purchase::purchase])
            .attach(Template::fairing())
            .register(catchers![base::not_found])
            .launch();
