@@ -40,10 +40,10 @@ impl Market {
     fn spawn_vendors(&mut self, count: usize) {
         let mut rng = rand::thread_rng();
         for i in 0..count {
-            let mut temp_vendor = shop::Vendor::new(format!("Vendor{}", i), format!("vendor_{}", i), rng.gen_range(700.0, 1300.0));
+            let mut temp_vendor = shop::Vendor::new(format!("Vendor {}", i), format!("vendor_{}", i), rng.gen_range(700.0, 1300.0));
             for j in 0..rng.gen_range(4,7) {
                 temp_vendor.items.push(shop::Item::new(
-                    format!("item_{}", j), 
+                    format!("item {}", j), 
                     rng.gen_range(1.0, 10.0), 
                     rng.gen_range(30, 70)
                 ))

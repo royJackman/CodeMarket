@@ -73,11 +73,12 @@ impl<'a> FromData<'a> for OrderData<'a> {
                                           true
                                       })
                                       .collect();
+        let to_remove: &[_] = &[',', '\n'];
         Success(OrderData{
-            item: &splits[0].split(" ").collect::<Vec<&str>>().last().unwrap(), 
-            count: &splits[1].split(" ").collect::<Vec<&str>>().last().unwrap(), 
-            from: &splits[2].split(" ").collect::<Vec<&str>>().last().unwrap(), 
-            to: &splits[3].split(" ").collect::<Vec<&str>>().last().unwrap()
+            item: &splits[0].trim().trim_matches(to_remove).split("\"").filter(|x| x != &"").collect::<Vec<&str>>().last().unwrap(), 
+            count: &splits[1].trim().trim_matches(to_remove).split("\"").filter(|x| x != &"").collect::<Vec<&str>>().last().unwrap(), 
+            from: &splits[2].trim().trim_matches(to_remove).split("\"").filter(|x| x != &"").collect::<Vec<&str>>().last().unwrap(), 
+            to: &splits[3].trim().trim_matches(to_remove).split("\"").filter(|x| x != &"").collect::<Vec<&str>>().last().unwrap()
         })
     }
 }
@@ -91,8 +92,8 @@ pub fn purchase(order_data: OrderData, market: State<super::Market>) -> content:
     let mut output_vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();
 
     for (i,v) in vendors.iter().enumerate() {
-        if v.url == order.from { seller_pos = i }
-        if v.url == order.to { buyer_pos = i }
+        if v.name == order.from { seller_pos = i }
+        if v.name == order.to { buyer_pos = i }
     }
 
     if seller_pos == usize::MAX {
