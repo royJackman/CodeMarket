@@ -25,8 +25,11 @@ pub mod util;
 
 fn main() {
     let mut session_ledger = ledger::Ledger::new();
-    let id = session_ledger.register_vendor("New Vendor".to_string(), None).unwrap_or("".to_string());
-    println!("{}", id);
+    let mut ids = vec![];
+    ids.push(session_ledger.register_vendor("New Vendor".to_string(), None).unwrap_or("".to_string()));
+    ids.push(session_ledger.register_vendor("Old Vendor".to_string(), Some("oldies".to_string())).unwrap_or("".to_string()));
+    ids.push(session_ledger.register_vendor("Hot Vendor".to_string(), None).unwrap_or("".to_string()));
+    ids.push(session_ledger.register_vendor("Cold Vendor".to_string(), Some("icees".to_string())).unwrap_or("".to_string()));
 
     rocket::ignite()
            .manage( session_ledger )
