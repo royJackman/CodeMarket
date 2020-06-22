@@ -51,7 +51,7 @@ impl<'a> FromData<'a> for OrderData<'a> {
         let mut string = String::with_capacity((BUFFER_SIZE/4) as usize);
         let outcome = match stream.read_to_string(&mut string) {
             Ok(_) => Success(string),
-            Err(e) => Failure((Status::InternalServerError, OrderError::Io(e)))
+            Err(e) => Failure((Status::InternalServerError, Self::Error::Io(e)))
         };
 
         Transform::Borrowed(outcome)

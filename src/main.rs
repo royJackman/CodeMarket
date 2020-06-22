@@ -7,7 +7,6 @@ extern crate nanoid;
 
 #[cfg(test)] mod tests;
 
-use rand::Rng;
 use std::fmt;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -34,7 +33,7 @@ fn main() {
     rocket::ignite()
            .manage( ledger::MutLedger{session_ledger: Arc::new(RwLock::new(session_ledger))} )
            .mount("/", StaticFiles::from("templates"))
-           .mount("/", routes![base::index])
+           .mount("/", routes![base::index, authorization::register])
            .mount("/vendors", routes![shop::market_home, shop::vendor, purchase::purchase])
            .attach(Template::fairing())
            .register(catchers![base::not_found])

@@ -1,6 +1,6 @@
 use rocket::State;
 use rocket_contrib::templates::Template;
-use super::ledger::{Ledger, MutLedger};
+use super::ledger::MutLedger;
 
 pub enum ShopError {
     ItemNotFound
