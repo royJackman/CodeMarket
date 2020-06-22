@@ -30,7 +30,7 @@ fn main() {
     ids.push(session_ledger.register_vendor("Old Vendor".to_string(), Some("oldies".to_string())).unwrap_or("".to_string()));
     ids.push(session_ledger.register_vendor("Hot Vendor".to_string(), None).unwrap_or("".to_string()));
     ids.push(session_ledger.register_vendor("Cold Vendor".to_string(), Some("icees".to_string())).unwrap_or("".to_string()));
-
+    println!("{:?}", ids);
     rocket::ignite()
            .manage( ledger::MutLedger{session_ledger: Arc::new(RwLock::new(session_ledger))} )
            .mount("/", StaticFiles::from("templates"))

@@ -5,7 +5,8 @@ use std::sync::{Arc, Mutex, RwLock};
 
 pub enum LedgerError {
     ExistingVendor,
-    ExistingUrl
+    ExistingUrl,
+    InvalidVendor
 }
 
 #[derive(Serialize)]
@@ -95,6 +96,13 @@ impl Ledger {
             let vendor_id = nanoid::simple();
             self.vendor_ids.lock().unwrap().push(vendor_id.clone());
             Ok(vendor_id)
+        }
+    }
+
+    pub fn verify_uuid(&self, name: String) -> Result<usize, LedgerError> {
+        match self.vendor_ids.lock().unwrap().iter().position(|x| x == &name) {
+            Some(u) => Ok(u),
+            None => Err(LedgerError::InvalidVendor)
         }
     }
 }

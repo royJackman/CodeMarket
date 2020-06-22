@@ -88,13 +88,12 @@ pub fn purchase(order_data: OrderData, ledger: State<super::ledger::MutLedger>) 
     let order = Order::from_data(order_data);
     let arc_ledger = ledger.inner().session_ledger.clone();
     let ledger = &*arc_ledger.write().unwrap();
-    let mut vendors = ledger.vendors.lock().unwrap();
-    let mut seller_pos = usize::MAX;
+    let seller_pos = ledger.verify_uuid(order.from).unwrap_or(usize::MAX);
     let mut buyer_pos = usize::MAX;
+    let mut vendors = ledger.vendors.lock().unwrap();
     let mut output_vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();
 
     for (i,v) in vendors.iter().enumerate() {
-        if v.name == order.from { seller_pos = i }
         if v.name == order.to { buyer_pos = i }
     }
 
