@@ -84,9 +84,11 @@ impl<'a> FromData<'a> for OrderData<'a> {
 }
 
 #[post("/purchase", format="application/json", data="<order_data>")]
-pub fn purchase(order_data: OrderData, market: State<super::ledger::Ledger>) -> content::Json<String> {
+pub fn purchase(order_data: OrderData, ledger: State<super::ledger::MutLedger>) -> content::Json<String> {
     let order = Order::from_data(order_data);
-    let mut vendors = (*market).vendors.lock().unwrap();
+    let arc_ledger = ledger.inner().session_ledger.clone();
+    let ledger = &*arc_ledger.write().unwrap();
+    let mut vendors = ledger.vendors.lock().unwrap();
     let mut seller_pos = usize::MAX;
     let mut buyer_pos = usize::MAX;
     let mut output_vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();

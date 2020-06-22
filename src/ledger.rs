@@ -1,7 +1,7 @@
 use super::shop::{Vendor, Item};
 use super::nanoid;
 use rand::Rng;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex, RwLock};
 
 pub enum LedgerError {
     ExistingVendor,
@@ -98,3 +98,5 @@ impl Ledger {
         }
     }
 }
+
+pub struct MutLedger { pub session_ledger: Arc<RwLock<Ledger>> }

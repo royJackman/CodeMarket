@@ -10,7 +10,7 @@ extern crate nanoid;
 use rand::Rng;
 use std::fmt;
 use std::collections::HashMap;
-use std::sync::Mutex;
+use std::sync::{Arc, RwLock};
 
 use rocket::Request;
 use rocket_contrib::templates::Template;
@@ -32,7 +32,7 @@ fn main() {
     ids.push(session_ledger.register_vendor("Cold Vendor".to_string(), Some("icees".to_string())).unwrap_or("".to_string()));
 
     rocket::ignite()
-           .manage( session_ledger )
+           .manage( ledger::MutLedger{session_ledger: Arc::new(RwLock::new(session_ledger))} )
            .mount("/", StaticFiles::from("templates"))
            .mount("/", routes![base::index])
            .mount("/vendors", routes![shop::market_home, shop::vendor, purchase::purchase])

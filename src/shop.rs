@@ -1,6 +1,6 @@
 use rocket::State;
 use rocket_contrib::templates::Template;
-use super::ledger::Ledger;
+use super::ledger::{Ledger, MutLedger};
 
 pub enum ShopError {
     ItemNotFound
@@ -114,15 +114,21 @@ impl super::fmt::Debug for Vendor {
 }
 
 #[get("/")]
-pub fn market_home(ledger: State<Ledger>) -> Template {
+pub fn market_home(ledger: State<MutLedger>) -> Template {
     let mut map = super::HashMap::new();
+    let arc_ledger = ledger.inner().session_ledger.clone();
+    let ledger = &*arc_ledger.read().unwrap();
     map.insert("vendors", &ledger.vendors);
     Template::render("market", map)
 }
 
 #[get("/<url>")]
-pub fn vendor(url: String, ledger: State<Ledger>) -> Template {
-    match ledger.vendors.lock().unwrap().iter().find(|x| x.url == url) {
+pub fn vendor(url: String, ledger: State<MutLedger>) -> Template {
+    let arc_ledger = ledger.inner().session_ledger.clone();
+    let ledger = &*arc_ledger.read().unwrap();
+    let vendors = ledger.vendors.lock().unwrap();
+    let vend = vendors.iter().find(|x| x.url == url);
+    match vend {
         Some(v) => {
             let mut map = super::HashMap::new();
             map.insert("vendor", &v);
