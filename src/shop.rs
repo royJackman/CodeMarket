@@ -10,27 +10,40 @@ pub enum ShopError {
 pub struct Item {
     pub name: String,
     pub price: f64,
-    count: u32
+    stocked: u32,
+    stored: u32
 }
 
 impl Item {
-    pub fn get_count(&self) -> u32 { self.count }
+    pub fn get_count(&self) -> u32 { self.stocked }
+
+    fn total(&self) -> u32 { self.stocked + self.stored }
     
-    pub fn new(name: String, price: f64, count: u32) -> Item {
-        Item { name, price, count }
+    pub fn new(name: String, price: f64, stocked: u32, stored: u32) -> Item {
+        Item { name, price, stocked, stored }
     }
 
     fn stock_item(&mut self, count: u32) {
-        self.count += count
+        if count <= self.stored {
+            self.stocked += self.stored - count;
+            self.stored -= count;
+        } else {
+            self.stocked += self.stored;
+            self.stored = 0;
+        }
+    }
+
+    fn store_item(&mut self, count: u32) {
+        self.stored += count;
     }
 
     fn sell_item(&mut self, count: u32) -> u32 {
-        if self.count >= count {
-            self.count -= count;
+        if self.stocked >= count {
+            self.stocked -= count;
             0
         } else {
-            let retval = count - self.count;
-            self.count = 0;
+            let retval = count - self.stocked;
+            self.stocked = 0;
             retval
         }
     }
@@ -40,7 +53,8 @@ impl PartialEq for Item {
     fn eq(&self, other: &Self) -> bool {
         self.name == other.name &&
         self.price == other.price &&
-        self.count == other.count
+        self.stocked == other.stocked &&
+        self.stored == other.stored
     }
 }
 
@@ -64,9 +78,10 @@ impl Vendor {
         }
     }
 
-    pub fn add_item(&mut self, item: Item) {
+    pub fn add_item(&mut self, item: Item, store: bool) {
         if let Some(i) = self.grab_item(&item.name) {
-            i.stock_item(item.get_count());
+            if store { i.store_item(item.total()) }
+            else { i.stock_item(item.total()) }
         } else {
             self.items.push(item);
         }

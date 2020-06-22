@@ -65,21 +65,21 @@ impl Ledger {
             let mut entries = self.entries.lock().unwrap();
             let mut rng = rand::thread_rng();
 
-            let i1 = Item::new("f32".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60));
+            let i1 = Item::new("f32".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60), 0);
             entries.push(Entry::new(self.version + 1, retval.name.clone(), i1.name.clone(), i1.get_count() as i32));
-            &retval.add_item(i1);
+            &retval.add_item(i1, false);
 
-            let i1 = Item::new("str".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60));
+            let i1 = Item::new("str".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60), 0);
             entries.push(Entry::new(self.version + 2, retval.name.clone(), i1.name.clone(), i1.get_count() as i32));
-            &retval.add_item(i1);
+            &retval.add_item(i1, false);
 
-            let i1 = Item::new("u16".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60));
+            let i1 = Item::new("u16".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60), 0);
             entries.push(Entry::new(self.version + 3, retval.name.clone(), i1.name.clone(), i1.get_count() as i32));
-            &retval.add_item(i1);
+            &retval.add_item(i1, false);
 
-            let i1 = Item::new("usize".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60));
+            let i1 = Item::new("usize".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60), 0);
             entries.push(Entry::new(self.version + 4, retval.name.clone(), i1.name.clone(), i1.get_count() as i32));
-            &retval.add_item(i1);
+            &retval.add_item(i1, false);
         }
 
         self.version += 4;
