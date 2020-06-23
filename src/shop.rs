@@ -6,6 +6,7 @@ pub enum ShopError {
     ItemNotFound
 }
 
+//Item of merchandise, for transfer, uses stocked and stored
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Item {
     pub name: String,
@@ -58,6 +59,7 @@ impl PartialEq for Item {
     }
 }
 
+//A single vendor in the market
 #[derive(Serialize, Deserialize)]
 pub struct Vendor {
     pub name: String,
@@ -128,6 +130,7 @@ impl super::fmt::Debug for Vendor {
     }
 }
 
+//Index endpoint for all vendors
 #[get("/")]
 pub fn market_home(ledger: State<MutLedger>) -> Template {
     let mut map = super::HashMap::new();
@@ -137,6 +140,7 @@ pub fn market_home(ledger: State<MutLedger>) -> Template {
     Template::render("market", map)
 }
 
+//Individual vendor page
 #[get("/<url>")]
 pub fn vendor(url: String, ledger: State<MutLedger>) -> Template {
     let arc_ledger = ledger.inner().session_ledger.clone();

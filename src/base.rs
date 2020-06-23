@@ -2,6 +2,7 @@ use rocket::State;
 use super::ledger::MutLedger;
 use rocket_contrib::templates::Template;
 
+//Index page endpoint
 #[get("/")]
 pub fn index(ledger: State<MutLedger>) -> Template {
     let mut map = super::HashMap::new();
@@ -11,6 +12,7 @@ pub fn index(ledger: State<MutLedger>) -> Template {
     Template::render("index", &map)
 }
 
+//Page not found catcher
 #[catch(404)]
 pub fn not_found(req: &super::Request<'_>) -> Template {
     let mut map = super::HashMap::new();

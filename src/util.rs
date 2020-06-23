@@ -2,6 +2,11 @@ use std::fmt::Display;
 use std::collections::BTreeMap;
 use rocket::response::content;
 
+/// Converts displayable values into JSON object for shipping
+/// 
+/// # Arguments
+/// 
+/// * `values`  - BTreeMap of Strings to printable (Display) objects
 pub fn construct_json(values: &BTreeMap<String, Box<dyn Display>>) -> content::Json<String> {
     let mut format_string = String::from("{ ");
 

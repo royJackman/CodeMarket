@@ -30,13 +30,14 @@ impl Registration {
     }
 }
 
-
+//Registration DTO
 #[derive(Deserialize, Debug)]
 pub struct RegistrationData<'a> {
     pub vendor_name: &'a str,
     pub vendor_url: &'a str
 }
 
+//Convert to and from JSON
 impl<'a> FromData<'a> for RegistrationData<'a> {
     type Error = AuthorizationError;
     type Owned = String;
@@ -77,6 +78,7 @@ impl<'a> FromData<'a> for RegistrationData<'a> {
     }
 }
 
+//Endpoint for registering new vendors
 #[post("/register", format="application/json", data="<registration_data>")]
 pub fn register(registration_data: RegistrationData, ledger: State<super::ledger::MutLedger>) -> content::Json<String> {
     let mut output_vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();

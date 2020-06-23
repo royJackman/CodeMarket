@@ -14,6 +14,7 @@ pub enum OrderError {
     Parse
 }
 
+//Holds purchase order data, merchandise goes FROM the SELLER, TO the BUYER
 pub struct Order {
     pub item: String,
     pub count: u32,
@@ -83,6 +84,7 @@ impl<'a> FromData<'a> for OrderData<'a> {
     }
 }
 
+//Endpoint for purchase requests
 #[post("/purchase", format="application/json", data="<order_data>")]
 pub fn purchase(order_data: OrderData, ledger: State<super::ledger::MutLedger>) -> content::Json<String> {
     let order = Order::from_data(order_data);

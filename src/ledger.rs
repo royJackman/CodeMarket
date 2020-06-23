@@ -9,20 +9,24 @@ pub enum LedgerError {
     InvalidVendor
 }
 
+//Change of goods at a vendor
 #[derive(Serialize)]
 struct Entry {
     id: u32,
     vendor: String,
     attribute: String,
-    change: i32
+    change: i32,
+    price: f64
 }
 
 impl Entry {
-    fn new(id: u32, vendor: String, attribute: String, change: i32) -> Entry {
-        Entry { id, vendor, attribute, change }
+    fn new(id: u32, vendor: String, attribute: String, change: i32, price: f64) -> Entry {
+        Entry { id, vendor, attribute, change, price }
     }
 }
 
+//Collection of asynchronously mutable data of transactions in the market
+//Used for verifying purchases, allows for parallel reading
 #[derive(Serialize)]
 pub struct Ledger {
     pub version: u32,
@@ -43,6 +47,13 @@ impl Ledger {
         }
     }
 
+    /// Creates a new vendor in the ledger, and assigns initial distribution of stocked goods
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
+    /// * `name`    - The name of the new vendor
+    /// * `url`     - An optional string to use for the url
     pub fn register_vendor(&mut self, name: String, url: Option<String>) -> Result<String, LedgerError> {
         let mut url = url;
 
@@ -66,19 +77,19 @@ impl Ledger {
             let mut rng = rand::thread_rng();
 
             let i1 = Item::new("f32".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60), 0);
-            entries.push(Entry::new(self.version + 1, retval.name.clone(), i1.name.clone(), i1.get_count() as i32));
+            entries.push(Entry::new(self.version + 1, retval.name.clone(), i1.name.clone(), i1.get_count() as i32, i1.price));
             &retval.add_item(i1, false);
 
             let i1 = Item::new("str".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60), 0);
-            entries.push(Entry::new(self.version + 2, retval.name.clone(), i1.name.clone(), i1.get_count() as i32));
+            entries.push(Entry::new(self.version + 2, retval.name.clone(), i1.name.clone(), i1.get_count() as i32, i1.price));
             &retval.add_item(i1, false);
 
             let i1 = Item::new("u16".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60), 0);
-            entries.push(Entry::new(self.version + 3, retval.name.clone(), i1.name.clone(), i1.get_count() as i32));
+            entries.push(Entry::new(self.version + 3, retval.name.clone(), i1.name.clone(), i1.get_count() as i32, i1.price));
             &retval.add_item(i1, false);
 
             let i1 = Item::new("usize".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60), 0);
-            entries.push(Entry::new(self.version + 4, retval.name.clone(), i1.name.clone(), i1.get_count() as i32));
+            entries.push(Entry::new(self.version + 4, retval.name.clone(), i1.name.clone(), i1.get_count() as i32, i1.price));
             &retval.add_item(i1, false);
         }
 
