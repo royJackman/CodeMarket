@@ -1,0 +1,29 @@
+{% extends "base" %}
+
+{% block content %}
+    <h1>Make a purchase</h1>
+    <p>Buy objects with bits</p>
+    <strong>Confirmed purchases are final</strong>
+    <form action="/form_purchase" method="post" accept-charset="utf-8">
+        <label>Item:
+            <input name="item" type="item"/>
+        </label>
+        <br /><br />
+        <label>Count:
+            <input name="count" type="count"/>
+        </label>
+        <br /><br />
+        <label>From:
+            <input name="from" type="from"/>
+        </label>
+        <br /><br />
+        <label>To:
+            <input name="to" type="to"/>
+        </label>
+        <br /><br />
+        <label>
+            <input type="submit" value="Purchase">
+        </label>
+        <br /><br />
+    </form>
+{% endblock content %}

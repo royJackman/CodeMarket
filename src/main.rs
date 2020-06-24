@@ -33,8 +33,8 @@ fn main() {
     rocket::ignite()
            .manage( ledger::MutLedger{session_ledger: Arc::new(RwLock::new(session_ledger))} )
            .mount("/", StaticFiles::from("templates"))
-           .mount("/", routes![base::index, authorization::register])
-           .mount("/vendors", routes![shop::market_home, shop::vendor, purchase::purchase])
+           .mount("/", routes![base::index, authorization::register, purchase::http_purchase, purchase::form_purchase, purchase::purchase_page])
+           .mount("/vendors", routes![shop::market_home, shop::vendor])
            .attach(Template::fairing())
            .register(catchers![base::not_found])
            .launch();

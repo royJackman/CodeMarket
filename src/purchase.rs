@@ -5,7 +5,9 @@ use std::collections::BTreeMap;
 use rocket::response::content;
 use rocket::{State, Request, Data, Outcome::*};
 use rocket::data::{FromData, Outcome, Transform, Transformed};
+use rocket::request::{Form, FormError, FormDataError};
 use rocket::http::Status;
+use rocket_contrib::templates::Template;
 
 const BUFFER_SIZE: u64 = 256;
 
@@ -15,6 +17,7 @@ pub enum OrderError {
 }
 
 //Holds purchase order data, merchandise goes FROM the SELLER, TO the BUYER
+#[derive(Debug, FromForm)]
 pub struct Order {
     pub item: String,
     pub count: u32,
@@ -84,10 +87,7 @@ impl<'a> FromData<'a> for OrderData<'a> {
     }
 }
 
-//Endpoint for purchase requests
-#[post("/purchase", format="application/json", data="<order_data>")]
-pub fn purchase(order_data: OrderData, ledger: State<super::ledger::MutLedger>) -> content::Json<String> {
-    let order = Order::from_data(order_data);
+fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> content::Json<String> {
     let arc_ledger = ledger.inner().session_ledger.clone();
     let ledger = &*arc_ledger.write().unwrap();
     let buyer_pos = ledger.verify_uuid(order.to).unwrap_or(usize::MAX);
@@ -174,4 +174,25 @@ pub fn purchase(order_data: OrderData, ledger: State<super::ledger::MutLedger>) 
     output_vars.insert("buyer".to_string(), Box::new(buyer_name));
 
     super::util::construct_json(&output_vars)
+}
+
+//Endpoint for JSON purchase requests
+#[post("/purchase", format="application/json", data="<order_data>")]
+pub fn http_purchase(order_data: OrderData, ledger: State<super::ledger::MutLedger>) -> content::Json<String> {
+    let order = Order::from_data(order_data);
+    purchase(order, ledger)
+}
+
+//Endpoint for manual form purchase
+#[post("/form_purchase", data="<order>")]
+pub fn form_purchase(order: Result<Form<Order>, FormError<'_>>, ledger: State<super::ledger::MutLedger>) -> content::Json<String> {
+    purchase(order.unwrap().into_inner(), ledger)
+}
+
+//Page with purchase form
+#[get("/purchase")]
+pub fn purchase_page() -> Template {
+    let mut map = super::HashMap::new();
+    map.insert("Error", "You should not be reading this");
+    Template::render("purchase", &map)
 }
