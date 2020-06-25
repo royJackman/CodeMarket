@@ -51,6 +51,7 @@
             <ul>
                 <li><a href="/">Home</a></li>
                 <li><a href="/vendors">Market</a></li>
+                <li><a href="/purchase">Purchase</a></li>
             </ul>
         </div>
         <div class="app">
