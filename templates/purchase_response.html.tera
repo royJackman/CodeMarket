@@ -1,0 +1,12 @@
+{% extends "base" %}
+
+{% block content %}
+    <h1>Purchase response</h1>
+    <p>Your purchase was {% if success %}<strong style="color:green">Successful</strong>{% else %}<strong style="color:red">Unsuccessful</strong>{% endif %}</p>
+    {% if success %}
+        Total: {{total}}<br/><br/>
+        Understock: {{understock}}<br/><br/>
+        Buyer: {{buyer}}<br/><br/>
+        Seller: {{seller}}<br/><br/>
+    {% endif %}
+{% endblock content %}

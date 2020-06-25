@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use rocket::response::content;
 use rocket::{State, Request, Data, Outcome::*};
 use rocket::data::{FromData, Outcome, Transform, Transformed};
-use rocket::request::{Form, FormError, FormDataError};
+use rocket::request::{Form, FormError};
 use rocket::http::Status;
 use rocket_contrib::templates::Template;
 
@@ -87,7 +87,7 @@ impl<'a> FromData<'a> for OrderData<'a> {
     }
 }
 
-fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> content::Json<String> {
+fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> BTreeMap<String, Box<dyn Display>> {
     let arc_ledger = ledger.inner().session_ledger.clone();
     let ledger = &*arc_ledger.write().unwrap();
     let buyer_pos = ledger.verify_uuid(order.to).unwrap_or(usize::MAX);
@@ -106,7 +106,7 @@ fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> content::J
         output_vars.insert("buyer".to_string(), Box::new("not found".to_string()));
     }
     if output_vars.len() > 0 {
-        return super::util::construct_json(&output_vars)
+        return output_vars
     }
 
     let mut item_price: f64 = 0.0;
@@ -122,7 +122,7 @@ fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> content::J
                 item_count = match i.get_count() {
                     0 => {
                         output_vars.insert("item".to_string(), Box::new("out of stock".to_string()));
-                        return super::util::construct_json(&output_vars)
+                        return output_vars
                     }
                     x => x
                 };
@@ -130,7 +130,7 @@ fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> content::J
             }, 
             None => {
                 output_vars.insert("item".to_string(), Box::new("not found at seller".to_string()));
-                return super::util::construct_json(&output_vars)
+                return output_vars
             }
         };
     }
@@ -146,7 +146,7 @@ fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> content::J
     let total = item_price * (order.count as f64);
     if total > buyer_bits {
         output_vars.insert("buyer".to_string(), Box::new("cannot afford the purchase".to_string()));
-        return super::util::construct_json(&output_vars)
+        return output_vars
     }
 
     let mut understock = 0;
@@ -173,20 +173,26 @@ fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> content::J
     output_vars.insert("seller".to_string(), Box::new(seller_name));
     output_vars.insert("buyer".to_string(), Box::new(buyer_name));
 
-    super::util::construct_json(&output_vars)
+    output_vars
 }
 
 //Endpoint for JSON purchase requests
 #[post("/purchase", format="application/json", data="<order_data>")]
 pub fn http_purchase(order_data: OrderData, ledger: State<super::ledger::MutLedger>) -> content::Json<String> {
     let order = Order::from_data(order_data);
-    purchase(order, ledger)
+    let output_vars = purchase(order, ledger);
+    super::util::construct_json(&output_vars)
 }
 
 //Endpoint for manual form purchase
 #[post("/form_purchase", data="<order>")]
-pub fn form_purchase(order: Result<Form<Order>, FormError<'_>>, ledger: State<super::ledger::MutLedger>) -> content::Json<String> {
-    purchase(order.unwrap().into_inner(), ledger)
+pub fn form_purchase(order: Result<Form<Order>, FormError<'_>>, ledger: State<super::ledger::MutLedger>) -> Template {
+    let mut response = purchase(order.unwrap().into_inner(), ledger);
+    let mut map = super::HashMap::new();
+    for (k, v) in response.iter_mut() {
+        map.insert(k, format!("{}", *v));
+    }
+    Template::render("purchase_response", &map)
 }
 
 //Page with purchase form
