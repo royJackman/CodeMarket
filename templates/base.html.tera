@@ -62,7 +62,9 @@
             div.navbar ul {
                 background-color: #333;
             }
-            div.navbar li { float: left; }
+            div.navbar li { 
+                float: left; 
+            }
             div.navbar li a {
                 display: block;
                 color: white;
@@ -71,6 +73,16 @@
                 text-decoration: none;
             }
             div.navbar li a:hover { background-color: #111; }
+            div.navbar li.ticker {
+                display: block;
+                float: right;
+                text-align: center;
+                padding: 14px 16px;
+                color: white;
+                width: calc(100% - 280px);
+                text-decoration: none;
+                overflow: hidden;
+            }
             div.response {
                 background: rgb(95,95,95);
                 display: inline-block;
@@ -80,6 +92,9 @@
                 width: auto;
             }
             div.row { height: 25px; }
+            div.ticker {
+                width: auto;
+            }
             input { float: right; }
             input[type=submit] {
                 display: block;
@@ -99,6 +114,11 @@
                 <li><a href="/">Home</a></li>
                 <li><a href="/vendors">Market</a></li>
                 <li><a href="/purchase">Purchase</a></li>
+                <div class="ticker">
+                    <li class="ticker">
+                        This is a ticker. Good info will be <strong style="color:lime">green</strong> and bad info will be <strong style="color:red">red</strong>.
+                    </li>
+                </div>
             </ul>
         </div>
         <div class="app">
