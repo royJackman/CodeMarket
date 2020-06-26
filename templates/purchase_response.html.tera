@@ -2,11 +2,13 @@
 
 {% block content %}
     <h1>Purchase response</h1>
-    <p>Your purchase was {% if success %}<strong style="color:green">Successful</strong>{% else %}<strong style="color:red">Unsuccessful</strong>{% endif %}</p>
-    {% if success %}
-        Total: {{total}}<br/><br/>
-        Understock: {{understock}}<br/><br/>
-        Buyer: {{buyer}}<br/><br/>
-        Seller: {{seller}}<br/><br/>
-    {% endif %}
+    <div class="response">
+        <h2>Your purchase was {% if success %}<strong style="color:lime">Successful</strong>{% else %}<strong style="color:red">Unsuccessful</strong>{% endif %}</h2>
+        {% if success %}
+            <div class="row"><label>Total:</label><span class="output">{{total}}</span></div><br/>
+            <div class="row"><label>Understock:</label><span class="output">{{understock}}</span></div><br/>
+            <div class="row"><label>Buyer:</label><span class="output">{{buyer}}</span></div><br/>
+            <div class="row"><label>Seller:</label><span class="output">{{seller}}</span></div><br/>
+        {% endif %}
+    </div>
 {% endblock content %}

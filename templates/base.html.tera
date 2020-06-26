@@ -71,8 +71,16 @@
                 text-decoration: none;
             }
             div.navbar li a:hover { background-color: #111; }
+            div.response {
+                background: rgb(95,95,95);
+                display: inline-block;
+                padding: 8px;
+                border-radius: 5px;
+                margin: 5px;
+                width: auto;
+            }
             div.row { height: 25px; }
-            input{ float: right; }
+            input { float: right; }
             input[type=submit] {
                 display: block;
                 margin-left: auto;
@@ -82,7 +90,7 @@
                 font-family: 'VT323', monospace;
                 font-size: 35px;
             }
-            
+            span.output { float: right; }
         </style>
     </head>
     <body>
