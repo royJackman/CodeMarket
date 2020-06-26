@@ -2,7 +2,7 @@
 
 {% block content %}
     <h1>Available vendors</h1>
-    <p>Here are your vendors, aranged in random order, for your convenience</p>
+    <h3>Here are your vendors, aranged in random order, for your convenience</h3>
     {% for v in vendors %}
         <div>
             <a class="button" href="/vendors/{{ v.url}}"><h3>{{ v.name }}</h3></a>

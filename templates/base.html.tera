@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <title>CodeMarket</title>
+        <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
         <style type="text/css">
             body { 
                 background: rgb(75,75,75);
@@ -13,6 +14,21 @@
                 margin: 0;
                 padding: 0;
                 overflow: hidden;
+            }
+            h1 {
+                font-family: 'VT323', monospace;
+                font-size: 70px;
+                margin: 5px;
+            }
+            h2 {
+                font-family: 'VT323', monospace;
+                font-size: 30px;
+                margin: 5px;
+            }
+            h3 {
+                font-family: 'VT323', monospace;
+                font-size: 20px;
+                margin: 5px;
             }
             a {
                 text-decoration: none;
@@ -31,6 +47,9 @@
                 font-size: 20px;
                 padding: 14px;
                 margin: 6px;
+            }
+            div.app {
+                margin: 8px;
             }
             div.navbar ul {
                 background-color: #333;
