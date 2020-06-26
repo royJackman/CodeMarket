@@ -3,27 +3,26 @@
 {% block content %}
     <h1>Make a purchase</h1>
     <h3>Buy objects with bits</h3>
-    <strong>Confirmed purchases are final</strong>
-    <form action="/form_purchase" method="post" accept-charset="utf-8">
-        <label>Item:
-            <input name="item" type="item"/>
-        </label>
-        <br /><br />
-        <label>Count:
-            <input name="count" type="count"/>
-        </label>
-        <br /><br />
-        <label>From:
-            <input name="from" type="from"/>
-        </label>
-        <br /><br />
-        <label>To:
-            <input name="to" type="to"/>
-        </label>
-        <br /><br />
-        <label>
+    <strong>Confirmed purchases are final</strong><br />
+    <div class="form">
+        <form action="/form_purchase" method="post" accept-charset="utf-8">
+            <div class="row">
+                <label for="item">Item:</label>
+                <input id="item" name="item" type="item"/><br />
+            </div>
+            <div class="row">
+                <label for="count">Count:</label>
+                <input id="count" name="count" type="count"/><br />
+            </div>
+            <div class="row">
+                <label for="from">From:</label>
+                <input id="from" name="from" type="from"/><br />
+            </div>
+            <div class="row">
+                <label for="to">To:</label>
+                <input id="to" name="to" type="to"/><br /><br />
+            </div>
             <input type="submit" value="Purchase">
-        </label>
-        <br /><br />
-    </form>
+        </form>
+    </div>
 {% endblock content %}
