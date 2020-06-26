@@ -187,8 +187,14 @@ pub fn http_purchase(order_data: OrderData, ledger: State<super::ledger::MutLedg
 //Endpoint for manual form purchase
 #[post("/form_purchase", data="<order>")]
 pub fn form_purchase(order: Result<Form<Order>, FormError<'_>>, ledger: State<super::ledger::MutLedger>) -> Template {
-    let mut response = purchase(order.unwrap().into_inner(), ledger);
     let mut map = super::HashMap::new();
+    let mut response = match order {
+        Ok(o) => purchase(o.into_inner(), ledger),
+        Err(_) => {
+            map.insert("Error", "Order was not filled out".to_string());
+            return Template::render("purchase", &map)
+        }
+    };
     for (k, v) in response.iter_mut() {
         map.insert(k, format!("{}", *v));
     }
@@ -199,6 +205,6 @@ pub fn form_purchase(order: Result<Form<Order>, FormError<'_>>, ledger: State<su
 #[get("/purchase")]
 pub fn purchase_page() -> Template {
     let mut map = super::HashMap::new();
-    map.insert("Error", "You should not be reading this");
+    map.insert("", "");
     Template::render("purchase", &map)
 }
