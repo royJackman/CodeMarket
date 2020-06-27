@@ -105,7 +105,7 @@
                 animation-iteration-count: infinite;
                 animation-timing-function: linear;
                 animation-name: ticker;
-                animation-duration: 15s;
+                animation-duration: 20s;
             }
             div.ticker-move:hover { animation-play-state: paused; }
             div.ticker-item{
@@ -142,9 +142,15 @@
                             <div class="ticker-item" style="color:red">{{e}}</div>
                         {% endfor -%}
                     {% endif -%}
-                    <div class="ticker-item">
-                        This is a ticker. Good info will be <strong style="color:lime">green</strong> and bad info will be <strong style="color:red">red</strong>.
-                    </div>
+                    {% if ticker_items -%}
+                        {% for t in ticker_items -%}
+                            <div class="ticker-item">{{t}}</div>
+                        {% endfor -%}
+                    {% else -%}
+                        <div class="ticker-item">
+                            Come see the project page at github.com/royJackman/CodeMarket
+                        </div>
+                    {% endif -%}
                 </div></div></div>
             </ul>
         </div>
