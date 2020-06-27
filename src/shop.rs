@@ -145,7 +145,7 @@ pub fn market_home(ledger: State<MutLedger>) -> Template {
 pub fn vendor(url: String, ledger: State<MutLedger>) -> Template {
     let arc_ledger = ledger.inner().session_ledger.clone();
     let ledger = &*arc_ledger.read().unwrap();
-    let vendors = ledger.vendors.lock().unwrap();
+    let vendors = ledger.vendors.read().unwrap();
     let vend = vendors.iter().find(|x| x.url == url);
     match vend {
         Some(v) => {

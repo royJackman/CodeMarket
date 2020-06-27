@@ -30,20 +30,20 @@ impl Entry {
 #[derive(Serialize)]
 pub struct Ledger {
     pub version: u32,
-    pub vendors: Mutex<Vec<Vendor>>,
-    entries: Mutex<Vec<Entry>>,
-    vendor_ids: Mutex<Vec<String>>,
-    vendor_versions: Mutex<Vec<u32>>
+    pub vendors: RwLock<Vec<Vendor>>,
+    entries: RwLock<Vec<Entry>>,
+    vendor_ids: RwLock<Vec<String>>,
+    vendor_versions: RwLock<Vec<u32>>
 }
 
 impl Ledger {
     pub fn new() -> Ledger {
         Ledger { 
             version: 0, 
-            entries: Mutex::new(vec![]),
-            vendors: Mutex::new(vec![]),
-            vendor_ids: Mutex::new(vec![]),
-            vendor_versions: Mutex::new(vec![])
+            entries: RwLock::new(vec![]),
+            vendors: RwLock::new(vec![]),
+            vendor_ids: RwLock::new(vec![]),
+            vendor_versions: RwLock::new(vec![])
         }
     }
 
@@ -58,7 +58,7 @@ impl Ledger {
         let mut url = url;
 
         {
-            let market = self.vendors.lock().unwrap();
+            let market = self.vendors.read().unwrap();
             if let Some(_) = market.iter().find(|x| x.name == name) {
                 return Err(LedgerError::ExistingVendor);
             }
@@ -73,7 +73,7 @@ impl Ledger {
 
         let mut retval = Vendor::new(name.clone(), url.unwrap(), 1000.0);
         {
-            let mut entries = self.entries.lock().unwrap();
+            let mut entries = self.entries.write().unwrap();
             let mut rng = rand::thread_rng();
 
             let i1 = Item::new("f32".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60), 0);
@@ -96,22 +96,22 @@ impl Ledger {
         self.version += 4;
 
         {
-            self.vendors.lock().unwrap().push(retval);
+            self.vendors.write().unwrap().push(retval);
         }
 
         {
-            self.vendor_versions.lock().unwrap().push(0);
+            self.vendor_versions.write().unwrap().push(0);
         }
 
         {
             let vendor_id = nanoid::simple();
-            self.vendor_ids.lock().unwrap().push(vendor_id.clone());
+            self.vendor_ids.write().unwrap().push(vendor_id.clone());
             Ok(vendor_id)
         }
     }
 
     pub fn verify_uuid(&self, name: String) -> Result<usize, LedgerError> {
-        match self.vendor_ids.lock().unwrap().iter().position(|x| x == &name) {
+        match self.vendor_ids.read().unwrap().iter().position(|x| x == &name) {
             Some(u) => Ok(u),
             None => Err(LedgerError::InvalidVendor)
         }

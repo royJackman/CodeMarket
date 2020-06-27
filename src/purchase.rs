@@ -92,7 +92,7 @@ fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> BTreeMap<S
     let ledger = &*arc_ledger.write().unwrap();
     let buyer_pos = ledger.verify_uuid(order.to).unwrap_or(usize::MAX);
     let mut seller_pos = usize::MAX;
-    let mut vendors = ledger.vendors.lock().unwrap();
+    let mut vendors = ledger.vendors.write().unwrap();
     let mut output_vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();
 
     for (i,v) in vendors.iter().enumerate() {
