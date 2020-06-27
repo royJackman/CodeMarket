@@ -94,6 +94,31 @@
             div.row { height: 25px; }
             div.ticker {
                 width: auto;
+                overflow: hidden;
+            }
+            div.ticker-wrap {
+                width: 100%;
+                padding-left: 100%;
+            }
+            @keyframes ticker {
+                0% { transform: translate3d(0,0,0); }
+                100% { transform: translate3d(-100%,0,0); }
+            }
+            div.ticker-move {
+                display: inline-block;
+                white-space: nowrap;
+                padding-right: 100%;
+                animation-iteration-count: infinite;
+                animation-timing-function: linear;
+                animation-name: ticker;
+                animation-duration: 15s;
+            }
+            div.ticker-move:hover { animation-play-state: paused; }
+            div.ticker-item{
+                display: inline-block;
+                padding: 0 2rem;
+                padding: 14px 16px;
+                color: white;
             }
             input { float: right; }
             input[type=submit] {
@@ -114,11 +139,11 @@
                 <li><a href="/">Home</a></li>
                 <li><a href="/vendors">Market</a></li>
                 <li><a href="/purchase">Purchase</a></li>
-                <div class="ticker">
-                    <li class="ticker">
+                <div class="ticker"><div class="ticker-wrap"><div class="ticker-move">
+                    <div class="ticker-item">
                         This is a ticker. Good info will be <strong style="color:lime">green</strong> and bad info will be <strong style="color:red">red</strong>.
-                    </li>
-                </div>
+                    </div>
+                </div></div></div>
             </ul>
         </div>
         <div class="app">
