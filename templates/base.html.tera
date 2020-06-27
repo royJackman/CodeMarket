@@ -137,6 +137,11 @@
                 <li><a href="/vendors">Market</a></li>
                 <li><a href="/purchase">Purchase</a></li>
                 <div class="ticker"><div class="ticker-wrap"><div class="ticker-move">
+                    {% if errors -%}
+                        {% for e in errors -%}
+                            <div class="ticker-item" style="color:red">{{e}}</div>
+                        {% endfor -%}
+                    {% endif -%}
                     <div class="ticker-item">
                         This is a ticker. Good info will be <strong style="color:lime">green</strong> and bad info will be <strong style="color:red">red</strong>.
                     </div>

@@ -5,8 +5,8 @@
     <h2>Here we sell Rust primitives for bits</h2>
     <h3>Available Vendors:</h3>
     <ul>
-        {% for v in market.vendors -%}
-            <li><a class="button" href="/vendors/{{ v.url }}">{{v.name}}</a></li>
+        {% for u in urls -%}
+            <li><a class="button" href="/vendors/{{ u }}">{{names[loop.index0]}}</a></li>
         {% endfor -%}
     </ul>
 {% endblock content %}

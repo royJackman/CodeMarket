@@ -8,7 +8,8 @@ pub fn index(ledger: State<MutLedger>) -> Template {
     let mut map = super::HashMap::new();
     let arc_ledger = ledger.inner().session_ledger.clone();
     let ledger = &*arc_ledger.read().unwrap();
-    map.insert("market", ledger);
+    map.insert("urls", ledger.get_vendor_urls());
+    map.insert("names", ledger.get_vendor_names());
     Template::render("index", &map)
 }
 

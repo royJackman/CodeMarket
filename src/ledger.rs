@@ -1,7 +1,7 @@
 use super::shop::{Vendor, Item};
 use super::nanoid;
 use rand::Rng;
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, RwLock};
 
 pub enum LedgerError {
     ExistingVendor,
@@ -45,6 +45,26 @@ impl Ledger {
             vendor_ids: RwLock::new(vec![]),
             vendor_versions: RwLock::new(vec![])
         }
+    }
+
+    pub fn get_vendor_names(&self) -> Vec<String> {
+        let mut retval: Vec<String> = vec![];
+        for v in self.vendors.read().unwrap().iter() {
+            retval.push(v.name.clone());
+        }
+        retval
+    }
+
+    pub fn get_vendor_urls(&self) -> Vec<String> {
+        let mut retval: Vec<String> = vec![];
+        for v in self.vendors.read().unwrap().iter() {
+            retval.push(v.url.clone());
+        }
+        retval
+    }
+
+    pub fn get_vendors(&self) -> Vec<Vendor> {
+        self.vendors.read().unwrap().clone()
     }
 
     /// Creates a new vendor in the ledger, and assigns initial distribution of stocked goods

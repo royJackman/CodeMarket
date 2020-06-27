@@ -7,7 +7,7 @@ pub enum ShopError {
 }
 
 //Item of merchandise, for transfer, uses stocked and stored
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Item {
     pub name: String,
     pub price: f64,
@@ -60,7 +60,7 @@ impl PartialEq for Item {
 }
 
 //A single vendor in the market
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Vendor {
     pub name: String,
     pub url: String,

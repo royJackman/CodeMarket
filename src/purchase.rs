@@ -191,12 +191,12 @@ pub fn form_purchase(order: Result<Form<Order>, FormError<'_>>, ledger: State<su
     let mut response = match order {
         Ok(o) => purchase(o.into_inner(), ledger),
         Err(_) => {
-            map.insert("Error", "Order was not filled out".to_string());
+            map.insert("errors", vec!["Order was not filled out".to_string()]);
             return Template::render("purchase", &map)
         }
     };
     for (k, v) in response.iter_mut() {
-        map.insert(k, format!("{}", *v));
+        map.insert(k, vec![format!("{}", *v)]);
     }
     Template::render("purchase_response", &map)
 }
