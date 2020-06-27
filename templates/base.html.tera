@@ -4,6 +4,7 @@
         <meta charset="utf-8" />
         <title>CodeMarket</title>
         <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
         <style type="text/css">
             body { 
                 background: rgb(75,75,75);
@@ -73,16 +74,6 @@
                 text-decoration: none;
             }
             div.navbar li a:hover { background-color: #111; }
-            div.navbar li.ticker {
-                display: block;
-                float: right;
-                text-align: center;
-                padding: 14px 16px;
-                color: white;
-                width: calc(100% - 280px);
-                text-decoration: none;
-                overflow: hidden;
-            }
             div.response {
                 background: rgb(95,95,95);
                 display: inline-block;
@@ -95,10 +86,13 @@
             div.ticker {
                 width: auto;
                 overflow: hidden;
+                margin: 
             }
             div.ticker-wrap {
                 width: 100%;
                 padding-left: 100%;
+                background: black;
+                border-radius: 3px;
             }
             @keyframes ticker {
                 0% { transform: translate3d(0,0,0); }
@@ -119,6 +113,9 @@
                 padding: 0 2rem;
                 padding: 14px 16px;
                 color: white;
+                font-family: 'Press Start 2P', cursive;
+                font-size: 15px;
+                transform: scale(.75, 1);
             }
             input { float: right; }
             input[type=submit] {
