@@ -91,7 +91,7 @@ pub fn register(registration_data: RegistrationData, ledger: State<super::ledger
     let arc_ledger = ledger.inner().session_ledger.clone();
     {
         let ledger = &*arc_ledger.read().unwrap();
-        for vendor in ledger.vendors.read().unwrap().iter() {
+        for vendor in ledger.get_vendors().iter() {
             if vendor.name == registration.vendor_name {
                 output_vars.insert("vendor_name".to_string(), Box::new("is in use".to_string()));
             }

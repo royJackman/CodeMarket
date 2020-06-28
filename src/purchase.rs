@@ -89,32 +89,37 @@ impl<'a> FromData<'a> for OrderData<'a> {
 
 fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> BTreeMap<String, Box<dyn Display>> {
     let arc_ledger = ledger.inner().session_ledger.clone();
-    let ledger = &*arc_ledger.write().unwrap();
-    let buyer_pos = ledger.verify_uuid(order.to).unwrap_or(usize::MAX);
-    let mut seller_pos = usize::MAX;
-    let mut vendors = ledger.vendors.write().unwrap();
-    let mut output_vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();
-
-    for (i,v) in vendors.iter().enumerate() {
-        if v.name == order.from { seller_pos = i }
-    }
-
-    if seller_pos == usize::MAX {
-        output_vars.insert("seller".to_string(), Box::new("not found".to_string()));
-    }
-    if buyer_pos == usize::MAX {
-        output_vars.insert("buyer".to_string(), Box::new("not found".to_string()));
-    }
-    if output_vars.len() > 0 {
-        return output_vars
-    }
-
+    let buyer_name: String;
+    let seller_name: String;
+    let buyer_bits: f64;
+    let item_found: bool;
+    
     let mut item_price: f64 = 0.0;
     let mut item_count: u32 = 0;
-    let item_found: bool;
-    let seller_name: String;
+    let buyer_pos: usize;
+    let mut seller_pos: usize;
+    let mut output_vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();
+
     {
-        let from = vendors.get(seller_pos).unwrap();
+        let ledger = &*arc_ledger.read().unwrap();
+        buyer_pos = ledger.verify_uuid(order.to.clone()).unwrap_or(usize::MAX);
+        seller_pos = usize::MAX;
+
+        for (i,v) in ledger.get_vendors().iter().enumerate() {
+            if v.name == order.from { seller_pos = i }
+        }
+
+        if seller_pos == usize::MAX {
+            output_vars.insert("seller".to_string(), Box::new("not found".to_string()));
+        }
+        if buyer_pos == usize::MAX {
+            output_vars.insert("buyer".to_string(), Box::new("not found".to_string()));
+        }
+        if output_vars.len() > 0 {
+            return output_vars
+        }
+        
+        let from = ledger.get_vendor(seller_pos);
         seller_name = from.name.clone();
         item_found = match from.get_item(&order.item) {
             Some(i) => {
@@ -133,12 +138,8 @@ fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> BTreeMap<S
                 return output_vars
             }
         };
-    }
-    
-    let buyer_bits: f64;
-    let buyer_name: String;
-    {
-        let to = vendors.get(buyer_pos).unwrap();
+
+        let to = ledger.get_vendor(buyer_pos);
         buyer_bits = to.bits;
         buyer_name = to.name.clone();
     }
@@ -154,17 +155,7 @@ fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> BTreeMap<S
 
     if item_found && (buyer_bits >= total) && item_count > 0 {
         success = true;
-        {
-            let from_vendor = vendors.get_mut(seller_pos).unwrap();
-            understock = match from_vendor.purchase_item(&order.item, order.count) {
-                Ok(u) => u, Err(_) => 0
-            }
-        }
-        {
-            let to_vendor = vendors.get_mut(buyer_pos).unwrap();
-            to_vendor.add_item(super::shop::Item::new(order.item.clone(), item_price, order.count, 0), false);
-            to_vendor.bits -= total - (item_price * (understock as f64));
-        }
+        understock = (*arc_ledger).write().unwrap().purchase(order, seller_pos, buyer_pos, item_price);
     }
 
     output_vars.insert("success".to_string(), Box::new(success));

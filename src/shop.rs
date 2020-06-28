@@ -136,7 +136,7 @@ pub fn market_home(ledger: State<MutLedger>) -> Template {
     let mut map = super::HashMap::new();
     let arc_ledger = ledger.inner().session_ledger.clone();
     let ledger = &*arc_ledger.read().unwrap();
-    map.insert("vendors", &ledger.vendors);
+    map.insert("vendors", ledger.get_vendors());
     Template::render("market", map)
 }
 
@@ -145,7 +145,7 @@ pub fn market_home(ledger: State<MutLedger>) -> Template {
 pub fn vendor(url: String, ledger: State<MutLedger>) -> Template {
     let arc_ledger = ledger.inner().session_ledger.clone();
     let ledger = &*arc_ledger.read().unwrap();
-    let vendors = ledger.vendors.read().unwrap();
+    let vendors = ledger.get_vendors();
     let vend = vendors.iter().find(|x| x.url == url);
     match vend {
         Some(v) => {

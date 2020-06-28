@@ -29,8 +29,8 @@ impl Entry {
 //Used for verifying purchases, allows for parallel reading
 #[derive(Serialize)]
 pub struct Ledger {
-    pub version: u32,
-    pub vendors: RwLock<Vec<Vendor>>,
+    version: u32,
+    vendors: RwLock<Vec<Vendor>>,
     entries: RwLock<Vec<Entry>>,
     vendor_ids: RwLock<Vec<String>>,
     vendor_versions: RwLock<Vec<u32>>
@@ -46,6 +46,8 @@ impl Ledger {
             vendor_versions: RwLock::new(vec![])
         }
     }
+    
+    pub fn get_version(&self) -> u32 { self.version }
 
     pub fn get_vendor_names(&self) -> Vec<String> {
         let mut retval: Vec<String> = vec![];
@@ -65,6 +67,10 @@ impl Ledger {
 
     pub fn get_vendors(&self) -> Vec<Vendor> {
         self.vendors.read().unwrap().clone()
+    }
+
+    pub fn get_vendor(&self, index: usize) -> Vendor {
+        self.vendors.read().unwrap()[index].clone()
     }
 
     /// Creates a new vendor in the ledger, and assigns initial distribution of stocked goods
@@ -128,6 +134,19 @@ impl Ledger {
             self.vendor_ids.write().unwrap().push(vendor_id.clone());
             Ok(vendor_id)
         }
+    }
+
+    pub fn purchase(&mut self, order: super::purchase::Order, seller_pos: usize, buyer_pos: usize, item_price: f64) -> u32 {
+        let mut mut_vendors = self.vendors.write().unwrap();
+        let mut entries = self.entries.write().unwrap();
+        let understock = match mut_vendors[seller_pos].purchase_item(&order.item, order.count) { Ok(u) => u, Err(_) => 0 };
+        let sold = order.count - understock;
+        entries.push(Entry::new(self.version + 1, mut_vendors[seller_pos].name.clone(), order.item.clone(), -1 * sold as i32, sold as f64 * item_price));
+        mut_vendors[buyer_pos].add_item(Item::new(order.item.clone(), item_price, order.count, 0), false);
+        mut_vendors[buyer_pos].bits -= sold as f64 * item_price;
+        entries.push(Entry::new(self.version + 2, mut_vendors[buyer_pos].name.clone(), order.item.clone(), sold as i32, -1.0 * sold as f64 * item_price));
+        self.version += 2;
+        understock
     }
 
     pub fn verify_uuid(&self, name: String) -> Result<usize, LedgerError> {
