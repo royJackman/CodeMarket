@@ -82,8 +82,8 @@ impl Vendor {
 
     pub fn add_item(&mut self, item: Item, store: bool) {
         if let Some(i) = self.grab_item(&item.name) {
-            if store { i.store_item(item.total()) }
-            else { i.stock_item(item.total()) }
+            i.store_item(item.total());
+            if !store { i.stock_item(item.total()) };
         } else {
             self.items.push(item);
         }
