@@ -8,12 +8,13 @@ extern crate nanoid;
 #[cfg(test)] mod tests;
 
 use std::fmt;
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 use std::sync::{Arc, RwLock};
 
 use rocket::Request;
 use rocket_contrib::templates::Template;
 use rocket_contrib::serve::StaticFiles;
+use rocket_contrib::templates::tera::{GlobalFn, Value, Error, from_value, to_value};
 
 mod base;
 mod ledger;
@@ -21,6 +22,18 @@ mod authorization;
 pub mod shop;
 pub mod purchase;
 pub mod util;
+
+fn make_intparse(_num: BTreeMap<String, String>) -> GlobalFn {
+    Box::new(move |args| -> Result<Value, Error> {
+        match args.get("num") {
+            Some(val) => match from_value::<String>(val.clone()) {
+                Ok(v) => Ok(to_value(v.parse::<i32>().unwrap()).unwrap()),
+                Err(_) => Err("Input `num` is not an integer".into()),
+            },
+            None => Err("Input `num` not provided".into()),
+        }
+    })
+}
 
 fn main() {
     let mut session_ledger = ledger::Ledger::new();
@@ -35,7 +48,10 @@ fn main() {
            .mount("/", StaticFiles::from("templates"))
            .mount("/", routes![base::index, authorization::register, purchase::http_purchase, purchase::form_purchase, purchase::purchase_page])
            .mount("/vendors", routes![shop::market_home, shop::vendor])
-           .attach(Template::fairing())
+           .attach(Template::custom(|engines| {
+               let num = BTreeMap::new();
+               engines.tera.register_function("intparse", make_intparse(num));
+           }))
            .register(catchers![base::not_found])
            .launch();
 }

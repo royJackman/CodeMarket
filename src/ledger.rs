@@ -73,6 +73,14 @@ impl Ledger {
         self.vendors.read().unwrap()[index].clone()
     }
 
+    pub fn get_vendor_items(&self, index: usize) -> Vec<Item> {
+        let mut retval = vec![];
+        for i in self.vendors.read().unwrap()[index].get_items().iter() {
+            retval.push(Item::new(i.name.clone(), i.price.clone(), i.get_count(), 0));
+        }
+        retval
+    }
+
     /// Creates a new vendor in the ledger, and assigns initial distribution of stocked goods
     /// 
     /// # Arguments
