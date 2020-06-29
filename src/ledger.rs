@@ -1,7 +1,11 @@
 use super::shop::{Vendor, Item};
 use super::nanoid;
 use rand::Rng;
+use rand::seq::SliceRandom;
 use std::sync::{Arc, RwLock};
+use std::collections::HashSet;
+
+const RUST_TYPES: &'static [&'static str] = &["bool", "u8", "u16", "u32", "u64", "u128", "i8", "i16", "i32", "i64", "i128", "f32", "f64", "str", "char", "never"];
 
 pub enum LedgerError {
     ExistingVendor,
@@ -33,7 +37,8 @@ pub struct Ledger {
     vendors: RwLock<Vec<Vendor>>,
     entries: RwLock<Vec<Entry>>,
     vendor_ids: RwLock<Vec<String>>,
-    vendor_versions: RwLock<Vec<u32>>
+    vendor_versions: RwLock<Vec<u32>>,
+    ledger_items: RwLock<HashSet<String>>
 }
 
 impl Ledger {
@@ -43,11 +48,20 @@ impl Ledger {
             entries: RwLock::new(vec![]),
             vendors: RwLock::new(vec![]),
             vendor_ids: RwLock::new(vec![]),
-            vendor_versions: RwLock::new(vec![])
+            vendor_versions: RwLock::new(vec![]),
+            ledger_items: RwLock::new(HashSet::new())
         }
     }
     
     pub fn get_version(&self) -> u32 { self.version }
+
+    pub fn get_vendor(&self, index: usize) -> Vendor {
+        self.vendors.read().unwrap()[index].clone()
+    }
+
+    pub fn get_vendors(&self) -> Vec<Vendor> {
+        self.vendors.read().unwrap().clone()
+    }
 
     pub fn get_vendor_names(&self) -> Vec<String> {
         let mut retval: Vec<String> = vec![];
@@ -63,14 +77,6 @@ impl Ledger {
             retval.push(v.url.clone());
         }
         retval
-    }
-
-    pub fn get_vendors(&self) -> Vec<Vendor> {
-        self.vendors.read().unwrap().clone()
-    }
-
-    pub fn get_vendor(&self, index: usize) -> Vendor {
-        self.vendors.read().unwrap()[index].clone()
     }
 
     pub fn get_vendor_items(&self, index: usize) -> Vec<Item> {
@@ -110,21 +116,14 @@ impl Ledger {
             let mut entries = self.entries.write().unwrap();
             let mut rng = rand::thread_rng();
 
-            let i1 = Item::new("f32".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60), 0);
-            entries.push(Entry::new(self.version + 1, retval.name.clone(), i1.name.clone(), i1.get_count() as i32, i1.price));
-            &retval.add_item(i1, false);
-
-            let i1 = Item::new("str".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60), 0);
-            entries.push(Entry::new(self.version + 2, retval.name.clone(), i1.name.clone(), i1.get_count() as i32, i1.price));
-            &retval.add_item(i1, false);
-
-            let i1 = Item::new("u16".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60), 0);
-            entries.push(Entry::new(self.version + 3, retval.name.clone(), i1.name.clone(), i1.get_count() as i32, i1.price));
-            &retval.add_item(i1, false);
-
-            let i1 = Item::new("usize".to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60), 0);
-            entries.push(Entry::new(self.version + 4, retval.name.clone(), i1.name.clone(), i1.get_count() as i32, i1.price));
-            &retval.add_item(i1, false);
+            for t in RUST_TYPES.choose_multiple(&mut rng, 4) {
+                {
+                    self.ledger_items.write().unwrap().insert(t.to_string());
+                }
+                let i1 = Item::new(t.to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60), 0);
+                entries.push(Entry::new(self.version + 1, retval.name.clone(), i1.name.clone(), i1.get_count() as i32, i1.price));
+                &retval.add_item(i1, false);
+            }
         }
 
         self.version += 4;
