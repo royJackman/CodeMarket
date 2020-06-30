@@ -1,11 +1,8 @@
 use super::shop::{Vendor, Item};
-use super::nanoid;
+use super::{nanoid, util};
 use rand::Rng;
-use rand::seq::SliceRandom;
 use std::sync::{Arc, RwLock};
-use std::collections::HashSet;
-
-const RUST_TYPES: &'static [&'static str] = &["bool", "u8", "u16", "u32", "u64", "u128", "i8", "i16", "i32", "i64", "i128", "f32", "f64", "str", "char", "never"];
+use std::collections::{HashMap, HashSet};
 
 pub enum LedgerError {
     ExistingVendor,
@@ -87,6 +84,34 @@ impl Ledger {
         retval
     }
 
+    pub fn show_avg_prices(&self) { println!("{:?}", self.calculate_avg_prices()) }
+
+    fn calculate_avg_prices(&self) -> HashMap<String, f64> {
+        let mut mapping = HashMap::new();
+        let mut reverse = HashMap::new();
+        let ledger_items = self.ledger_items.read().unwrap();
+        for (i, v) in ledger_items.iter().enumerate(){
+            mapping.insert(v, i);
+            reverse.insert(i, v);
+        }
+        let mut totals = vec![0.0; ledger_items.len()];
+        let mut counts = totals.clone();
+        let mut retval: HashMap<String, f64> = HashMap::new();
+
+        for id in 0..self.vendor_ids.read().unwrap().len() {
+            for i in self.get_vendor_items(id) {
+                totals[mapping[&i.name]] += i.get_count() as f64 * i.price;
+                counts[mapping[&i.name]] += i.get_count() as f64;
+            }
+        }
+
+        for (i, t) in totals.iter().enumerate() {
+            retval.insert(reverse[&i].clone(), t/(counts[i] as f64));
+        }
+
+        retval
+    }
+
     /// Creates a new vendor in the ledger, and assigns initial distribution of stocked goods
     /// 
     /// # Arguments
@@ -116,7 +141,8 @@ impl Ledger {
             let mut entries = self.entries.write().unwrap();
             let mut rng = rand::thread_rng();
 
-            for t in RUST_TYPES.choose_multiple(&mut rng, 4) {
+            // for t in RUST_TYPES.choose_multiple(&mut rng, 4) {
+            for t in util::get_rust_types(4).iter() {
                 {
                     self.ledger_items.write().unwrap().insert(t.to_string());
                 }
