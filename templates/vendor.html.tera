@@ -2,7 +2,7 @@
 
 {% block content %}
     <h1>{{ vendor.name }}</h1>
-    <p>Best prices this side of the http</p>
+    <p>{{catchphrase_generator()}}</p>
     <br/>
     <ul>
         {% for item in vendor.items -%}

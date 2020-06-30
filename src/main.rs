@@ -45,14 +45,21 @@ fn make_intparse(_num: BTreeMap<String, String>) -> GlobalFn {
     })
 }
 
+fn make_catchphrase_generator() -> GlobalFn {
+    Box::new(move |_args| -> Result<Value, Error> {
+        Ok(to_value(util::catchphrase_generator()).unwrap())
+    })
+}
+
 fn main() {
     let mut session_ledger = ledger::Ledger::new();
     let mut ids = vec![];
-    ids.push(session_ledger.register_vendor("New Vendor".to_string(), None).unwrap_or("".to_string()));
-    ids.push(session_ledger.register_vendor("Old Vendor".to_string(), Some("oldies".to_string())).unwrap_or("".to_string()));
-    ids.push(session_ledger.register_vendor("Hot Vendor".to_string(), None).unwrap_or("".to_string()));
-    ids.push(session_ledger.register_vendor("Cold Vendor".to_string(), Some("icees".to_string())).unwrap_or("".to_string()));
+    ids.push(session_ledger.register_vendor(util::name_generator(), None).unwrap_or("".to_string()));
+    ids.push(session_ledger.register_vendor(util::name_generator(), Some("oldies".to_string())).unwrap_or("".to_string()));
+    ids.push(session_ledger.register_vendor(util::name_generator(), None).unwrap_or("".to_string()));
+    ids.push(session_ledger.register_vendor(util::name_generator(), Some("icees".to_string())).unwrap_or("".to_string()));
     println!("{:?}", ids);
+    session_ledger.show_prices();
     rocket::ignite()
            .manage( ledger::MutLedger{session_ledger: Arc::new(RwLock::new(session_ledger))} )
            .mount("/", StaticFiles::from("templates"))
@@ -61,6 +68,7 @@ fn main() {
            .attach(Template::custom(|engines| {
                let num = BTreeMap::new();
                engines.tera.register_function("intparse", make_intparse(num));
+               engines.tera.register_function("catchphrase_generator", make_catchphrase_generator());
            }))
            .register(catchers![base::not_found])
            .launch();
