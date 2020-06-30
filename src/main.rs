@@ -1,5 +1,6 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 
+#[macro_use] extern crate lazy_static;
 #[macro_use] extern crate rocket;
 #[macro_use] extern crate serde_derive;
 
@@ -11,6 +12,7 @@ use std::fmt;
 use std::collections::{HashMap, BTreeMap};
 use std::sync::{Arc, RwLock};
 
+use config::*;
 use rocket::Request;
 use rocket_contrib::templates::Template;
 use rocket_contrib::serve::StaticFiles;
@@ -22,6 +24,14 @@ mod authorization;
 pub mod shop;
 pub mod purchase;
 pub mod util;
+
+lazy_static! {
+    pub static ref CONFIG: RwLock<Config> = RwLock::new({
+        let mut settings = Config::default();
+        settings.merge(File::with_name("Config.toml")).unwrap();
+        settings
+    });
+}
 
 fn make_intparse(_num: BTreeMap<String, String>) -> GlobalFn {
     Box::new(move |args| -> Result<Value, Error> {

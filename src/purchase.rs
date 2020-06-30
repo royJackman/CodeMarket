@@ -87,6 +87,7 @@ impl<'a> FromData<'a> for OrderData<'a> {
     }
 }
 
+#[allow(unused_assignments)]
 fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> BTreeMap<String, Box<dyn Display>> {
     let arc_ledger = ledger.inner().session_ledger.clone();
     let buyer_name: String;

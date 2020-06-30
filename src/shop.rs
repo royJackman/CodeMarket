@@ -97,7 +97,7 @@ impl Vendor {
         self.items.clone()
     }
 
-    pub fn grab_item(&mut self, name: &String) -> Option<&mut Item> {
+    fn grab_item(&mut self, name: &String) -> Option<&mut Item> {
         self.items.iter_mut().find(|i| &i.name == name)
     }
 
