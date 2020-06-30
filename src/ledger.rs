@@ -35,7 +35,8 @@ pub struct Ledger {
     entries: RwLock<Vec<Entry>>,
     vendor_ids: RwLock<Vec<String>>,
     vendor_versions: RwLock<Vec<u32>>,
-    ledger_items: RwLock<HashSet<String>>
+    ledger_items: RwLock<HashSet<String>>,
+    price_history: RwLock<Vec<Vec<f64>>>
 }
 
 impl Ledger {
@@ -46,11 +47,14 @@ impl Ledger {
             vendors: RwLock::new(vec![]),
             vendor_ids: RwLock::new(vec![]),
             vendor_versions: RwLock::new(vec![]),
-            ledger_items: RwLock::new(HashSet::new())
+            ledger_items: RwLock::new(HashSet::new()),
+            price_history: RwLock::new(vec![vec![0.0; util::get_rust_types(0).len()]])
         }
     }
     
     pub fn get_version(&self) -> u32 { self.version }
+
+    pub fn get_price_history(&self) -> usize { self.price_history.read().unwrap().len() }
 
     pub fn get_vendor(&self, index: usize) -> Vendor {
         self.vendors.read().unwrap()[index].clone()
@@ -84,7 +88,7 @@ impl Ledger {
         retval
     }
 
-    pub fn show_avg_prices(&self) { println!("{:?}", self.calculate_avg_prices()) }
+    pub fn show_avg_prices(&self) { println!("{:#?}", self.calculate_avg_prices()) }
 
     fn calculate_avg_prices(&self) -> HashMap<String, f64> {
         let mut mapping = HashMap::new();
@@ -111,6 +115,8 @@ impl Ledger {
 
         retval
     }
+
+    fn update_avg_price(&mut self, new_vals: Vec<f64>) { self.price_history.write().unwrap().push(new_vals); }
 
     /// Creates a new vendor in the ledger, and assigns initial distribution of stocked goods
     /// 
@@ -154,6 +160,8 @@ impl Ledger {
 
         self.version += 4;
 
+        self.update_avg_price(util::convert_minimal_to_full(self.calculate_avg_prices()));
+
         {
             self.vendors.write().unwrap().push(retval);
         }
@@ -170,15 +178,21 @@ impl Ledger {
     }
 
     pub fn purchase(&mut self, order: super::purchase::Order, seller_pos: usize, buyer_pos: usize, item_price: f64) -> u32 {
-        let mut mut_vendors = self.vendors.write().unwrap();
-        let mut entries = self.entries.write().unwrap();
-        let understock = match mut_vendors[seller_pos].purchase_item(&order.item, order.count) { Ok(u) => u, Err(_) => 0 };
-        let sold = order.count - understock;
-        entries.push(Entry::new(self.version + 1, mut_vendors[seller_pos].name.clone(), order.item.clone(), -1 * sold as i32, sold as f64 * item_price));
-        mut_vendors[buyer_pos].add_item(Item::new(order.item.clone(), item_price, order.count, 0), false);
-        mut_vendors[buyer_pos].bits -= sold as f64 * item_price;
-        entries.push(Entry::new(self.version + 2, mut_vendors[buyer_pos].name.clone(), order.item.clone(), sold as i32, -1.0 * sold as f64 * item_price));
+        let understock: u32;
+        {
+            let mut mut_vendors = self.vendors.write().unwrap();
+            let mut entries = self.entries.write().unwrap();
+            understock = match mut_vendors[seller_pos].purchase_item(&order.item, order.count) { Ok(u) => u, Err(_) => 0 };
+            let sold = order.count - understock;
+            entries.push(Entry::new(self.version + 1, mut_vendors[seller_pos].name.clone(), order.item.clone(), -1 * sold as i32, sold as f64 * item_price));
+
+            mut_vendors[buyer_pos].add_item(Item::new(order.item.clone(), item_price, order.count, 0), false);
+            mut_vendors[buyer_pos].bits -= sold as f64 * item_price;
+            entries.push(Entry::new(self.version + 2, mut_vendors[buyer_pos].name.clone(), order.item.clone(), sold as i32, -1.0 * sold as f64 * item_price));
+        }
+
         self.version += 2;
+        self.update_avg_price(util::convert_minimal_to_full(self.calculate_avg_prices()));
         understock
     }
 

@@ -1,5 +1,5 @@
 use std::fmt::Display;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 
 use rand::Rng;
 use rand::seq::SliceRandom;
@@ -42,7 +42,20 @@ pub fn name_generator() -> String {
     format!("{} {}", ADJECTIVES[rng.gen_range(0, ADJECTIVES.len())], OCCUPATION[rng.gen_range(0, OCCUPATION.len())])
 }
 
+pub fn get_rust_type_index(t: String) -> usize { RUST_TYPES.iter().position(|&x| x == &*t).unwrap() }
+
 pub fn get_rust_types(count: usize) -> Vec<&'static str> { 
+    if count == 0 { return RUST_TYPES.to_vec(); }
     let mut rng = rand::thread_rng();
     RUST_TYPES.choose_multiple(&mut rng, count).cloned().collect()
+}
+
+pub fn convert_minimal_to_full(avg_prices: HashMap<String, f64>) -> Vec<f64> {
+    let mut vec_prices = vec![0.0; RUST_TYPES.len()];
+    for (i, t) in RUST_TYPES.iter().enumerate() {
+        if avg_prices.contains_key(&t.to_string()){
+            vec_prices[i] = avg_prices[&t.to_string()];
+        }
+    }
+    vec_prices
 }

@@ -58,7 +58,7 @@ fn main() {
     ids.push(session_ledger.register_vendor(util::name_generator(), Some("oldies".to_string())).unwrap_or("".to_string()));
     ids.push(session_ledger.register_vendor(util::name_generator(), None).unwrap_or("".to_string()));
     ids.push(session_ledger.register_vendor(util::name_generator(), Some("icees".to_string())).unwrap_or("".to_string()));
-    println!("{:?}", ids);
+    println!("{:#?}", ids);
     session_ledger.show_avg_prices();
     rocket::ignite()
            .manage( ledger::MutLedger{session_ledger: Arc::new(RwLock::new(session_ledger))} )

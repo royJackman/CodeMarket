@@ -13,6 +13,8 @@ pub fn index(ledger: State<MutLedger>) -> Template {
     map.insert("ticker_items", vec!["Welcome to CodeMarket!".to_string(), 
                                     "Your one-stop shop for types from all over the Internet!".to_string(), 
                                     "Don't forget to inform your local ledger with every purchase!".to_string()]);
+    ledger.show_avg_prices();
+    println!("{}", ledger.get_price_history());
     Template::render("index", &map)
 }
 
