@@ -39,7 +39,7 @@ a:visited {
     color: black;
 }
 
-a.button {
+.button {
     background-color: rgb(65, 65, 65);
     border-radius: 5px;
     border: none;
@@ -49,11 +49,11 @@ a.button {
     margin: 6px;
 }
 
-div.app {
+.app {
     margin: 8px;
 }
 
-div.form {
+.form {
     background: rgb(95, 95, 95);
     display: inline-block;
     padding: 8px;
@@ -82,7 +82,7 @@ div.navbar li a:hover {
     background-color: #111;
 }
 
-div.response {
+.response {
     background: rgb(95, 95, 95);
     display: inline-block;
     padding: 8px;
@@ -91,16 +91,16 @@ div.response {
     width: auto;
 }
 
-div.row {
+.row {
     height: 25px;
 }
 
-div.ticker {
+.ticker {
     width: auto;
     overflow: hidden;
 }
 
-div.ticker-wrap {
+.ticker-wrap {
     width: 100%;
     padding-left: 100%;
     background: black;
@@ -111,7 +111,6 @@ div.ticker-wrap {
     0% {
         transform: translate3d(0, 0, 0);
     }
-
     100% {
         transform: translate3d(-100%, 0, 0);
     }
@@ -124,14 +123,14 @@ div.ticker-move {
     animation-iteration-count: infinite;
     animation-timing-function: linear;
     animation-name: ticker;
-    animation-duration: 20s;
+    animation-duration: 25s;
 }
 
 div.ticker-move:hover {
     animation-play-state: paused;
 }
 
-div.ticker-item {
+.ticker-item {
     display: inline-block;
     padding: 0 2rem;
     padding: 14px 16px;
@@ -155,6 +154,6 @@ input[type=submit] {
     font-size: 35px;
 }
 
-span.output {
+.output {
     float: right;
 }
