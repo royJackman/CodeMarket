@@ -48,9 +48,8 @@ a:visited {
     border-radius: 5px;
     border: 1px solid black;
     float: left;
-    font-size: 20px;
-    padding: 14px;
-    margin: 6px;
+    padding: 0px 8px;
+    margin: 4px;
     display: block;
     width: 100%;
     cursor: pointer;

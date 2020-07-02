@@ -6,7 +6,7 @@
     <h3>Available Vendors:</h3>
     <div class="btn-group">
         {% for u in urls -%}
-            <a href="/vendors/{{ u }}"><button>{{names[loop.index0]}}</button></a>
+            <a href="/vendors/{{ u }}"><button><h3>{{names[loop.index0]}}</h3></button></a>
         {% endfor -%}
     </div>
 {% endblock content %}
