@@ -39,14 +39,29 @@ a:visited {
     color: black;
 }
 
-.button {
+.btn-group {
+    width: 20%;
+}
+
+.btn-group button {
     background-color: rgb(65, 65, 65);
     border-radius: 5px;
-    border: none;
+    border: 1px solid black;
     float: left;
     font-size: 20px;
     padding: 14px;
     margin: 6px;
+    display: block;
+    width: 100%;
+    cursor: pointer;
+}
+
+.btn-group button:hover {
+    background-color: rgb(60, 60, 60);
+}
+
+.centered {
+    text-align: center;
 }
 
 .app {

@@ -5,17 +5,16 @@
     <h3>Here are your vendors, aranged in random order, for your convenience</h3>
     {% set_global ind = 0 %}
     {% for name in vendor_names %}
-        <div>
-            <a class="button" href="/vendors/{{ vendor_urls[loop.index0] }}"><h3>{{ name }}</h3></a>
-            <p>Items for sale:</p>
-            <ul>
+        <div class="btn-group">
+            <a class="button" href="/vendors/{{ vendor_urls[loop.index0] }}"><button><h3>{{ name }}</h3></button></a>
+            <div>
                 {% set temp_count = intparse(num=item_count[loop.index0]) %}
                 {% for i in range(end=temp_count) -%}
                     {% set curr = ind + i -%}
-                    <li><strong>{{ all_items[curr] }}:</strong> <span>{{ all_prices[curr] }}</span></li>
+                    <div class="centered"><strong>{{ all_items[curr] }}:</strong> <span>{{ all_prices[curr] }}</span></div>
                 {% endfor %}
                 {% set_global ind = ind + temp_count -%}
-            </ul>
+            </div>
         </div>
     {% endfor %}
 {% endblock content %}
