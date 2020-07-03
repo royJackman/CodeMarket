@@ -88,6 +88,10 @@ impl Ledger {
         retval
     }
 
+    pub fn get_ledger_items(&self) -> Vec<String> { 
+        self.ledger_items.read().unwrap().clone().into_iter().collect::<Vec<String>>()
+    }
+
     pub fn show_avg_prices(&self) { println!("{:#?}", self.calculate_avg_prices()) }
 
     fn calculate_avg_prices(&self) -> HashMap<String, f64> {

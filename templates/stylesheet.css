@@ -43,6 +43,27 @@ body {
     text-align: center;
 }
 
+div.graph-container {
+    display: flex;
+    flex-direction: row;
+}
+
+div.graph-canvas {
+    background-color: white;
+    border-color: whitesmoke;
+    border-radius: 5px;
+    flex: 70%;
+    height: 70vh;
+    margin: 5px;
+    margin-left: 12px;
+    overflow: hidden;
+    padding: 8px;
+}
+
+.flex-30 {
+    flex: 30%;
+}
+
 div.navbar ul {
     background-color: #333;
 }
@@ -86,20 +107,22 @@ div.ticker-move:hover {
     width: 250px;
 }
 
-h1 {
+h1, h2, h3 {
+    display: inline-block;
     font-family: 'VT323', monospace;
+}
+
+h1 {
     font-size: 70px;
     margin: 5px;
 }
 
 h2 {
-    font-family: 'VT323', monospace;
     font-size: 30px;
     margin: 5px;
 }
 
 h3 {
-    font-family: 'VT323', monospace;
     font-size: 20px;
     margin: 5px;
 }
@@ -116,6 +139,10 @@ input[type=submit] {
     margin-left: auto;
     margin-right: auto;
     width: 100%;
+}
+
+.output {
+    float: right;
 }
 
 .response {
@@ -157,13 +184,8 @@ input[type=submit] {
     display: inline-block;
     font-family: 'Press Start 2P', cursive;
     font-size: 15px;
-    padding: 0 2rem;
     padding: 14px 16px;
     transform: scale(.75, 1);
-}
-
-.output {
-    float: right;
 }
 
 ul {

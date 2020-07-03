@@ -10,6 +10,9 @@ pub fn index(ledger: State<MutLedger>) -> Template {
     let ledger = &*arc_ledger.read().unwrap();
     map.insert("urls", ledger.get_vendor_urls());
     map.insert("names", ledger.get_vendor_names());
+    let mut types = ledger.get_ledger_items();
+    types.sort();
+    map.insert("types", types);
     map.insert("ticker_items", vec!["Welcome to CodeMarket!".to_string(), 
                                     "Your one-stop shop for types from all over the Internet!".to_string(), 
                                     "Don't forget to inform your local ledger with every purchase!".to_string()]);
