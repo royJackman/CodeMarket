@@ -1,7 +1,7 @@
 {% extends "base" %}
 
 {% block content %}
-    <h1>Purchase response</h1>
+    <h1>Purchase response</h1></br>
     <div class="response">
         <h2>Your purchase was {% if success %}<strong style="color:lime">Successful</strong>{% else %}<strong style="color:red">Unsuccessful</strong>{% endif %}</h2>
         {% if success %}

@@ -1,8 +1,8 @@
 {% extends "base" %}
 
 {% block content %}
-    <h1>Make a purchase</h1>
-    <h3>Buy objects with bits</h3>
+    <h1>Make a purchase</h1></br>
+    <h3>Buy objects with bits</h3></br>
     <strong>Confirmed purchases are final</strong><br />
     <div class="form">
         <form action="/form_purchase" method="post" accept-charset="utf-8">
