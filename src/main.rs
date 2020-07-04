@@ -16,11 +16,11 @@ use config::*;
 use rocket::Request;
 use rocket_contrib::templates::Template;
 use rocket_contrib::serve::StaticFiles;
-use rocket_contrib::templates::tera::{GlobalFn, Value, Error, from_value, to_value};
 
 mod base;
 mod ledger;
 mod authorization;
+mod tera_functions;
 pub mod shop;
 pub mod purchase;
 pub mod util;
@@ -31,24 +31,6 @@ lazy_static! {
         settings.merge(File::with_name("Config.toml")).unwrap();
         settings
     });
-}
-
-fn make_intparse(_num: BTreeMap<String, String>) -> GlobalFn {
-    Box::new(move |args| -> Result<Value, Error> {
-        match args.get("num") {
-            Some(val) => match from_value::<String>(val.clone()) {
-                Ok(v) => Ok(to_value(v.parse::<i32>().unwrap()).unwrap()),
-                Err(_) => Err("Input `num` is not an integer".into()),
-            },
-            None => Err("Input `num` not provided".into()),
-        }
-    })
-}
-
-fn make_catchphrase_generator() -> GlobalFn {
-    Box::new(move |_args| -> Result<Value, Error> {
-        Ok(to_value(util::catchphrase_generator()).unwrap())
-    })
 }
 
 fn main() {
@@ -67,8 +49,8 @@ fn main() {
            .mount("/vendors", routes![shop::market_home, shop::vendor])
            .attach(Template::custom(|engines| {
                let num = BTreeMap::new();
-               engines.tera.register_function("intparse", make_intparse(num));
-               engines.tera.register_function("catchphrase_generator", make_catchphrase_generator());
+               engines.tera.register_function("intparse", tera_functions::make_intparse(num));
+               engines.tera.register_function("catchphrase_generator", tera_functions::make_catchphrase_generator());
            }))
            .register(catchers![base::not_found])
            .launch();

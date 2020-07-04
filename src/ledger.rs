@@ -151,7 +151,6 @@ impl Ledger {
             let mut entries = self.entries.write().unwrap();
             let mut rng = rand::thread_rng();
 
-            // for t in RUST_TYPES.choose_multiple(&mut rng, 4) {
             for t in util::get_rust_types(4).iter() {
                 {
                     self.ledger_items.write().unwrap().insert(t.to_string());
