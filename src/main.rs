@@ -48,9 +48,10 @@ fn main() {
            .mount("/", routes![base::index, authorization::register, purchase::http_purchase, purchase::form_purchase, purchase::purchase_page])
            .mount("/vendors", routes![shop::market_home, shop::vendor])
            .attach(Template::custom(|engines| {
-               let num = BTreeMap::new();
-               engines.tera.register_function("intparse", tera_functions::make_intparse(num));
+               let var = BTreeMap::new();
                engines.tera.register_function("catchphrase_generator", tera_functions::make_catchphrase_generator());
+               engines.tera.register_function("get_rust_type_index", tera_functions::make_get_rust_type_index(var.clone()));
+               engines.tera.register_function("intparse", tera_functions::make_intparse(var.clone()));
            }))
            .register(catchers![base::not_found])
            .launch();

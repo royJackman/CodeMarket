@@ -48,13 +48,15 @@ impl Ledger {
             vendor_ids: RwLock::new(vec![]),
             vendor_versions: RwLock::new(vec![]),
             ledger_items: RwLock::new(HashSet::new()),
-            price_history: RwLock::new(vec![vec![0.0; util::get_rust_types(0).len()]])
+            price_history: RwLock::new(vec![vec![]; util::get_rust_types(0).len()])
         }
     }
     
     pub fn get_version(&self) -> u32 { self.version }
 
-    pub fn get_price_history(&self) -> usize { self.price_history.read().unwrap().len() }
+    pub fn get_item_history(&self, item: String) -> Vec<f64> { self.price_history.read().unwrap()[util::get_rust_type_index(item)].clone() }
+
+    pub fn get_price_history(&self) -> Vec<Vec<f64>> { self.price_history.read().unwrap().clone() }
 
     pub fn get_vendor(&self, index: usize) -> Vendor {
         self.vendors.read().unwrap()[index].clone()
@@ -120,7 +122,11 @@ impl Ledger {
         retval
     }
 
-    fn update_avg_price(&mut self, new_vals: Vec<f64>) { self.price_history.write().unwrap().push(new_vals); }
+    fn update_avg_price(&mut self, new_vals: Vec<f64>) {
+        for (i, &v) in new_vals.iter().enumerate() {
+            self.price_history.write().unwrap()[i].push(v);
+        }
+    }
 
     /// Creates a new vendor in the ledger, and assigns initial distribution of stocked goods
     /// 

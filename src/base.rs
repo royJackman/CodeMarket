@@ -1,4 +1,5 @@
 use rocket::State;
+use serde_json::to_value;
 use super::ledger::MutLedger;
 use rocket_contrib::templates::Template;
 
@@ -8,16 +9,15 @@ pub fn index(ledger: State<MutLedger>) -> Template {
     let mut map = super::HashMap::new();
     let arc_ledger = ledger.inner().session_ledger.clone();
     let ledger = &*arc_ledger.read().unwrap();
-    map.insert("urls", ledger.get_vendor_urls());
-    map.insert("names", ledger.get_vendor_names());
+    map.insert("urls", to_value(ledger.get_vendor_urls()).unwrap());
+    map.insert("names", to_value(ledger.get_vendor_names()).unwrap());
     let mut types = ledger.get_ledger_items();
     types.sort();
-    map.insert("types", types);
-    map.insert("ticker_items", vec!["Welcome to CodeMarket!".to_string(), 
-                                    "Your one-stop shop for types from all over the Internet!".to_string(), 
-                                    "Don't forget to inform your local ledger with every purchase!".to_string()]);
-    ledger.show_avg_prices();
-    println!("{}", ledger.get_price_history());
+    map.insert("types", to_value(types).unwrap());
+    map.insert("history", to_value(ledger.get_price_history()).unwrap());
+    map.insert("ticker_items", to_value(vec!["Welcome to CodeMarket!".to_string(), 
+                                             "Your one-stop shop for types from all over the Internet!".to_string(), 
+                                             "Don't forget to inform your local ledger with every purchase!".to_string()]).unwrap());
     Template::render("index", &map)
 }
 

@@ -3,16 +3,11 @@
 {% block content %}
     <h1>The Rust Market</h1></br>
     <h2>Here we sell Rust primitives for bits</h2></br>
-    <h3>Available Vendors:</h3></br>
-    {# <div class="btn-group">
-        {% for u in urls -%}
-            <a href="/vendors/{{ u }}"><button><h3>{{names[loop.index0]}}</h3></button></a>
-        {% endfor -%}
-    </div> #}
     <div class="graph-container">
         <div class="btn-group flex-30">
             {% for t in types -%}
-                <button id={{t}} onclick="renderGraph(this)" value="{{t}}">{{t}}</button>
+                {% set rust_type_id = get_rust_type_index(data=t) -%}
+                <button id={{t}} onclick="renderData({{history[rust_type_id]}})" value="{{t}}">{{t}}</button>
             {% endfor -%}
         </div>
         <div id="graph-canvas" class="graph-canvas"/>
