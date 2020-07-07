@@ -1,9 +1,14 @@
 use rocket::State;
+use rocket_contrib::templates::Template;
 use serde_json::to_value;
 use super::ledger::MutLedger;
-use rocket_contrib::templates::Template;
 
-//Index page endpoint
+/// Index page for the application. Contains overview information for the
+/// current market state and price distribution.
+/// 
+/// # Arguments
+/// 
+/// * `ledger`  - The current ledger state
 #[get("/")]
 pub fn index(ledger: State<MutLedger>) -> Template {
     let mut map = super::HashMap::new();
@@ -21,7 +26,11 @@ pub fn index(ledger: State<MutLedger>) -> Template {
     Template::render("index", &map)
 }
 
-//Page not found catcher
+/// 404 error catcher. 
+/// 
+/// # Arguments
+/// 
+/// * `req` - The current http request information
 #[catch(404)]
 pub fn not_found(req: &super::Request<'_>) -> Template {
     let mut map = super::HashMap::new();
