@@ -7,7 +7,7 @@
         <div class="btn-group flex-30">
             {% for t in types -%}
                 {% set rust_type_id = get_rust_type_index(data=t) -%}
-                <button id={{t}} onclick="renderData({{history[rust_type_id]}})" value="{{t}}">{{t}}</button>
+                <button id={{t}} onclick="renderData('{{t}}', {{history[rust_type_id]}})" value="{{t}}">{{t}}</button>
             {% endfor -%}
         </div>
         <div id="graph-canvas" class="graph-canvas"/>
@@ -15,7 +15,7 @@
     <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
     <script type="text/javascript" src="index.js"></script>
     <script>
-        window.onload = function() { renderGraph({'value': 'bool'}); }
-        window.onresize = function() { renderGraph({'value': document.getElementById('graph-canvas').value}); }
+        {% set rust_type_id = get_rust_type_index(data=types[0]) -%}
+        window.onload = function() { renderData('{{types[0]}}', {{ history[rust_type_id] }}); }
     </script>
 {% endblock content %}
