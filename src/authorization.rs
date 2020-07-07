@@ -1,11 +1,11 @@
-use std::io::{self, Read};
-use std::fmt::Display;
 use std::collections::BTreeMap;
+use std::fmt::Display;
+use std::io::{Read, self};
 
+use rocket::{Data, Outcome::*, Request, State};
+use rocket::data::{FromData, Outcome, Transform, Transformed};
 use rocket::http::Status;
 use rocket::response::content;
-use rocket::{State, Request, Data, Outcome::*};
-use rocket::data::{FromData, Outcome, Transform, Transformed};
 
 const BUFFER_SIZE: u64 = 256;
 
@@ -20,6 +20,7 @@ pub struct Registration {
     pub vendor_url: String
 }
 
+//Implement registration conversion
 impl Registration {
     pub fn from_data(data: RegistrationData) -> Registration {
         let clean_string = |string: &str| String::from(string).replace("\"", "").replace(",", "").replace("\r", "");
@@ -78,7 +79,14 @@ impl<'a> FromData<'a> for RegistrationData<'a> {
     }
 }
 
-//Endpoint for registering new vendors
+/// The endpoint for registering new vendors using a JSON object. When a valid
+/// new vendor is registered, a session-specific UUID is returned, and it must
+/// be used to validate purchase requests.
+/// 
+/// # Arguments
+/// 
+/// * `registration_data`   - JSON object with registration info
+/// * `ledger`              - The current ledger state
 #[post("/register", format="application/json", data="<registration_data>")]
 pub fn register(registration_data: RegistrationData, ledger: State<super::ledger::MutLedger>) -> content::Json<String> {
     let mut output_vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();
