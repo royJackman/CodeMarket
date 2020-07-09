@@ -51,37 +51,50 @@ impl Ledger {
             price_history: RwLock::new(vec![vec![]; util::get_rust_types(0).len()])
         }
     }
-    
-    pub fn get_version(&self) -> u32 { self.version }
 
+    /// Gets the history of average prices for an item
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
+    /// * `item`    - The name of the item requested
     pub fn get_item_history(&self, item: String) -> Vec<f64> { self.price_history.read().unwrap()[util::get_rust_type_index(item)].clone() }
 
+    /// Gets the names of all of the items currently tracked by the ledger
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
+    pub fn get_ledger_items(&self) -> Vec<String> { self.ledger_items.read().unwrap().clone().into_iter().collect::<Vec<String>>() }
+
+    /// Gets the history of all of the items in the ledger
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
     pub fn get_price_history(&self) -> Vec<Vec<f64>> { self.price_history.read().unwrap().clone() }
 
-    pub fn get_vendor(&self, index: usize) -> Vendor {
-        self.vendors.read().unwrap()[index].clone()
-    }
+    /// Returns a copy of the vendor at the given index
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
+    /// * `index`   - The index of the vendor in the internal session list
+    pub fn get_vendor(&self, index: usize) -> Vendor { self.vendors.read().unwrap()[index].clone() }
 
-    pub fn get_vendors(&self) -> Vec<Vendor> {
-        self.vendors.read().unwrap().clone()
-    }
+    /// Returns a copy of the vendors in the ledger
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
+    pub fn get_vendors(&self) -> Vec<Vendor> { self.vendors.read().unwrap().clone() }
 
-    pub fn get_vendor_names(&self) -> Vec<String> {
-        let mut retval: Vec<String> = vec![];
-        for v in self.vendors.read().unwrap().iter() {
-            retval.push(v.name.clone());
-        }
-        retval
-    }
-
-    pub fn get_vendor_urls(&self) -> Vec<String> {
-        let mut retval: Vec<String> = vec![];
-        for v in self.vendors.read().unwrap().iter() {
-            retval.push(v.url.clone());
-        }
-        retval
-    }
-
+    /// Get a copy of the items in stock for a particular vendor
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
+    /// * `index`   - The index of the vendor in the internal session list
     pub fn get_vendor_items(&self, index: usize) -> Vec<Item> {
         let mut retval = vec![];
         for i in self.vendors.read().unwrap()[index].get_items().iter() {
@@ -90,42 +103,68 @@ impl Ledger {
         retval
     }
 
-    pub fn get_ledger_items(&self) -> Vec<String> { 
-        self.ledger_items.read().unwrap().clone().into_iter().collect::<Vec<String>>()
-    }
-
-    pub fn show_avg_prices(&self) { println!("{:#?}", self.calculate_avg_prices()) }
-
-    fn calculate_avg_prices(&self) -> HashMap<String, f64> {
-        let mut mapping = HashMap::new();
-        let mut reverse = HashMap::new();
-        let ledger_items = self.ledger_items.read().unwrap();
-        for (i, v) in ledger_items.iter().enumerate(){
-            mapping.insert(v, i);
-            reverse.insert(i, v);
+    /// Returns a list containing the names of all of the vendors
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
+    pub fn get_vendor_names(&self) -> Vec<String> {
+        let mut retval: Vec<String> = vec![];
+        for v in self.vendors.read().unwrap().iter() {
+            retval.push(v.name.clone());
         }
-        let mut totals = vec![0.0; ledger_items.len()];
-        let mut counts = totals.clone();
-        let mut retval: HashMap<String, f64> = HashMap::new();
-
-        for id in 0..self.vendor_ids.read().unwrap().len() {
-            for i in self.get_vendor_items(id) {
-                totals[mapping[&i.name]] += i.get_count() as f64 * i.price;
-                counts[mapping[&i.name]] += i.get_count() as f64;
-            }
-        }
-
-        for (i, t) in totals.iter().enumerate() {
-            retval.insert(reverse[&i].clone(), t/(counts[i] as f64));
-        }
-
         retval
     }
 
-    fn update_avg_price(&mut self, new_vals: Vec<f64>) {
-        for (i, &v) in new_vals.iter().enumerate() {
-            self.price_history.write().unwrap()[i].push(v);
+    /// Returns a list containing the urls of all of the vendors
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
+    pub fn get_vendor_urls(&self) -> Vec<String> {
+        let mut retval: Vec<String> = vec![];
+        for v in self.vendors.read().unwrap().iter() {
+            retval.push(v.url.clone());
         }
+        retval
+    }
+    
+    /// Returns the current latest version of the ledger
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
+    pub fn get_version(&self) -> u32 { self.version }
+
+    /// Performs a purchase transaction where the buyer purchases stocked items
+    /// from the seller for a fixed price. Confirmed purchases are final and
+    /// recorded in the ledger
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`        - A mutable reference to the current ledger object
+    /// * `order`       - The purchase order for the transaction, buyer and seller
+    ///                   already confirmed
+    /// * `seller_pos`  - The location of the seller in the internal vendor list
+    /// * `buyer_pos`   - The location of the buyer in the internal vendor list
+    /// * `item_price`  - The price of the item in the transaction
+    pub fn purchase(&mut self, order: super::purchase::Order, seller_pos: usize, buyer_pos: usize, item_price: f64) -> u32 {
+        let understock: u32;
+        {
+            let mut mut_vendors = self.vendors.write().unwrap();
+            let mut entries = self.entries.write().unwrap();
+            understock = match mut_vendors[seller_pos].purchase_item(&order.item, order.count) { Ok(u) => u, Err(_) => 0 };
+            let sold = order.count - understock;
+            entries.push(Entry::new(self.version + 1, mut_vendors[seller_pos].name.clone(), order.item.clone(), -1 * sold as i32, sold as f64 * item_price));
+
+            mut_vendors[buyer_pos].add_item(Item::new(order.item.clone(), item_price, order.count, 0), false);
+            mut_vendors[buyer_pos].bits -= sold as f64 * item_price;
+            entries.push(Entry::new(self.version + 2, mut_vendors[buyer_pos].name.clone(), order.item.clone(), sold as i32, -1.0 * sold as f64 * item_price));
+        }
+
+        self.version += 2;
+        self.update_avg_price(util::convert_minimal_to_full(self.calculate_avg_prices()));
+        understock
     }
 
     /// Creates a new vendor in the ledger, and assigns initial distribution of stocked goods
@@ -186,29 +225,56 @@ impl Ledger {
         }
     }
 
-    pub fn purchase(&mut self, order: super::purchase::Order, seller_pos: usize, buyer_pos: usize, item_price: f64) -> u32 {
-        let understock: u32;
-        {
-            let mut mut_vendors = self.vendors.write().unwrap();
-            let mut entries = self.entries.write().unwrap();
-            understock = match mut_vendors[seller_pos].purchase_item(&order.item, order.count) { Ok(u) => u, Err(_) => 0 };
-            let sold = order.count - understock;
-            entries.push(Entry::new(self.version + 1, mut_vendors[seller_pos].name.clone(), order.item.clone(), -1 * sold as i32, sold as f64 * item_price));
+    /// Prints the current average prices for all items in the ledger
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
+    pub fn show_avg_prices(&self) { println!("{:#?}", self.calculate_avg_prices()) }
 
-            mut_vendors[buyer_pos].add_item(Item::new(order.item.clone(), item_price, order.count, 0), false);
-            mut_vendors[buyer_pos].bits -= sold as f64 * item_price;
-            entries.push(Entry::new(self.version + 2, mut_vendors[buyer_pos].name.clone(), order.item.clone(), sold as i32, -1.0 * sold as f64 * item_price));
-        }
-
-        self.version += 2;
-        self.update_avg_price(util::convert_minimal_to_full(self.calculate_avg_prices()));
-        understock
-    }
-
-    pub fn verify_uuid(&self, name: String) -> Result<usize, LedgerError> {
-        match self.vendor_ids.read().unwrap().iter().position(|x| x == &name) {
+    /// Verifies the nanoid of a user request and returns internal vendor list
+    /// index if it exists
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
+    /// * `uuid`    - A unique user ID for the current session
+    pub fn verify_uuid(&self, uuid: String) -> Result<usize, LedgerError> {
+        match self.vendor_ids.read().unwrap().iter().position(|x| x == &uuid) {
             Some(u) => Ok(u),
             None => Err(LedgerError::InvalidVendor)
+        }
+    }
+
+    fn calculate_avg_prices(&self) -> HashMap<String, f64> {
+        let mut mapping = HashMap::new();
+        let mut reverse = HashMap::new();
+        let ledger_items = self.ledger_items.read().unwrap();
+        for (i, v) in ledger_items.iter().enumerate(){
+            mapping.insert(v, i);
+            reverse.insert(i, v);
+        }
+        let mut totals = vec![0.0; ledger_items.len()];
+        let mut counts = totals.clone();
+        let mut retval: HashMap<String, f64> = HashMap::new();
+
+        for id in 0..self.vendor_ids.read().unwrap().len() {
+            for i in self.get_vendor_items(id) {
+                totals[mapping[&i.name]] += i.get_count() as f64 * i.price;
+                counts[mapping[&i.name]] += i.get_count() as f64;
+            }
+        }
+
+        for (i, t) in totals.iter().enumerate() {
+            retval.insert(reverse[&i].clone(), t/(counts[i] as f64));
+        }
+
+        retval
+    }
+
+    fn update_avg_price(&mut self, new_vals: Vec<f64>) {
+        for (i, &v) in new_vals.iter().enumerate() {
+            self.price_history.write().unwrap()[i].push(v);
         }
     }
 }
