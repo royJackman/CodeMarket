@@ -16,12 +16,26 @@ pub struct Item {
 }
 
 impl Item {
-    pub fn get_count(&self) -> u32 { self.stocked }
-
-    fn total(&self) -> u32 { self.stocked + self.stored }
-    
     pub fn new(name: String, price: f64, stocked: u32, stored: u32) -> Item {
         Item { name, price, stocked, stored }
+    }
+
+    /// Gets the vendor's stock for this item
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current item object
+    pub fn get_count(&self) -> u32 { self.stocked }
+
+    fn sell_item(&mut self, count: u32) -> u32 {
+        if self.stocked >= count {
+            self.stocked -= count;
+            0
+        } else {
+            let retval = count - self.stocked;
+            self.stocked = 0;
+            retval
+        }
     }
 
     fn stock_item(&mut self, count: u32) {
@@ -38,16 +52,7 @@ impl Item {
         self.stored += count;
     }
 
-    fn sell_item(&mut self, count: u32) -> u32 {
-        if self.stocked >= count {
-            self.stocked -= count;
-            0
-        } else {
-            let retval = count - self.stocked;
-            self.stocked = 0;
-            retval
-        }
-    }
+    fn total(&self) -> u32 { self.stocked + self.stored }
 }
 
 impl PartialEq for Item {
@@ -73,13 +78,11 @@ impl Vendor {
         Vendor{ name, url, bits, items: vec![] }
     }
 
-    pub fn contains(&mut self, name: &String) -> bool {
-        match self.get_item(name) {
-            Some(_) => true,
-            None => false
-        }
-    }
-
+    /// Adds an item to the vendor
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current vendor object
     pub fn add_item(&mut self, item: Item, store: bool) {
         if let Some(i) = self.grab_item(&item.name) {
             i.store_item(item.total());
@@ -89,24 +92,53 @@ impl Vendor {
         }
     }
 
+    /// Returns true if this vendor has the object
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
+    /// * `name`    - The name of the desired item
+    pub fn contains(&mut self, name: &String) -> bool {
+        match self.get_item(name) {
+            Some(_) => true,
+            None => false
+        }
+    }
+
+    /// Returns an immutable reference to a vendor's item if it exists
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
     pub fn get_item(&self, name: &String) -> Option<&Item> {
         self.items.iter().find(|i| &i.name == name)
     }
 
+    /// Returns a clone of all of the itmes the vendor hass
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
     pub fn get_items(&self) -> Vec<Item> {
         self.items.clone()
     }
 
-    fn grab_item(&mut self, name: &String) -> Option<&mut Item> {
-        self.items.iter_mut().find(|i| &i.name == name)
-    }
-
+    /// Purchases a stocked item from a vendor, and return the understock, or
+    /// the amount the vendor was not able to fulfill with their stocked goods
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
     pub fn purchase_item(&mut self, item: &String, count: u32) -> Result<u32, ShopError> {
         if let Some(i) = self.grab_item(item) {
             Ok(i.sell_item(count))
         } else {
             Err(ShopError::ItemNotFound)
         }
+    }
+
+    fn grab_item(&mut self, name: &String) -> Option<&mut Item> {
+        self.items.iter_mut().find(|i| &i.name == name)
     }
 }
 
@@ -134,7 +166,12 @@ impl super::fmt::Debug for Vendor {
     }
 }
 
-//Index endpoint for all vendors
+/// An endpoint that displays all of the vendors currently in the market with
+/// the prices of their goods
+/// 
+/// # Arguments
+/// 
+/// * `ledger`    - The current ledger state
 #[get("/")]
 pub fn market_home(ledger: State<MutLedger>) -> Template {
     let mut map = super::HashMap::new();
@@ -161,7 +198,12 @@ pub fn market_home(ledger: State<MutLedger>) -> Template {
     Template::render("market", &map)
 }
 
-//Individual vendor page
+/// An endpoint for individual vendors
+/// 
+/// # Arguments
+/// 
+/// * `url`       - The url of the vendor
+/// * `ledger`    - The current ledger state
 #[get("/<url>")]
 pub fn vendor(url: String, ledger: State<MutLedger>) -> Template {
     let arc_ledger = ledger.inner().session_ledger.clone();
