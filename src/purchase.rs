@@ -1,12 +1,12 @@
-use std::io::{self, Read};
-use std::fmt::Display;
 use std::collections::BTreeMap;
+use std::fmt::Display;
+use std::io::{self, Read};
 
-use rocket::response::content;
-use rocket::{State, Request, Data, Outcome::*};
 use rocket::data::{FromData, Outcome, Transform, Transformed};
-use rocket::request::{Form, FormError};
 use rocket::http::Status;
+use rocket::response::content;
+use rocket::request::{Form, FormError};
+use rocket::{State, Request, Data, Outcome::*};
 use rocket_contrib::templates::Template;
 
 const BUFFER_SIZE: u64 = 256;
