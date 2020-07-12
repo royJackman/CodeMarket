@@ -66,8 +66,15 @@ fn main() {
     rocket::ignite()
            .manage( ledger::MutLedger{session_ledger: Arc::new(RwLock::new(session_ledger))} )
            .mount("/", StaticFiles::from("templates"))
-           .mount("/", routes![base::index, authorization::register, purchase::http_purchase, purchase::form_purchase, purchase::purchase_page])
-           .mount("/vendors", routes![shop::market_home, shop::vendor])
+           .mount("/", routes![
+               base::index, 
+               authorization::register, 
+               purchase::http_purchase, 
+               purchase::form_purchase, 
+               purchase::purchase_page])
+           .mount("/vendors", routes![
+               shop::market_home, 
+               shop::vendor])
            .attach(Template::custom(|engines| {
                let var = BTreeMap::new();
                engines.tera.register_function("catchphrase_generator", tera_functions::make_catchphrase_generator());

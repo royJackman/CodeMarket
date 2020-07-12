@@ -87,6 +87,13 @@ impl<'a> FromData<'a> for OrderData<'a> {
     }
 }
 
+/// Function for performing a purchase, including confirming resources and
+/// updating the ledger and returns a map from Strings to Displayable objects
+/// 
+/// # Arguments
+/// 
+/// * `order`   - The purchase order being made
+/// * `ledger`  - The current ledger state
 #[allow(unused_assignments)]
 fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> BTreeMap<String, Box<dyn Display>> {
     let arc_ledger = ledger.inner().session_ledger.clone();
@@ -168,7 +175,12 @@ fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> BTreeMap<S
     output_vars
 }
 
-//Endpoint for JSON purchase requests
+/// Endpoint for making purchase orders via HTTP request
+/// 
+/// # Arguments
+/// 
+/// * `order_data`  - The DTO for the purchase order being completed
+/// * `ledger`      - The current ledger state
 #[post("/purchase", format="application/json", data="<order_data>")]
 pub fn http_purchase(order_data: OrderData, ledger: State<super::ledger::MutLedger>) -> content::Json<String> {
     let order = Order::from_data(order_data);
@@ -176,7 +188,12 @@ pub fn http_purchase(order_data: OrderData, ledger: State<super::ledger::MutLedg
     super::util::construct_json(&output_vars)
 }
 
-//Endpoint for manual form purchase
+/// Endpoint for manual purchase orders using a form
+/// 
+/// # Arguments
+/// 
+/// * `order`   - The purchase order information from the form
+/// * `ledger`  - The current ledger state
 #[post("/form_purchase", data="<order>")]
 pub fn form_purchase(order: Result<Form<Order>, FormError<'_>>, ledger: State<super::ledger::MutLedger>) -> Template {
     let mut map = super::HashMap::new();
@@ -193,7 +210,7 @@ pub fn form_purchase(order: Result<Form<Order>, FormError<'_>>, ledger: State<su
     Template::render("purchase_response", &map)
 }
 
-//Page with purchase form
+/// Purchasing page GET endpoint
 #[get("/purchase")]
 pub fn purchase_page() -> Template {
     let mut map = super::HashMap::new();
