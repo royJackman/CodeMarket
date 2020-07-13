@@ -7,16 +7,28 @@
     <div class="form">
         <form action="/form_purchase" method="post" accept-charset="utf-8">
             <div class="row">
+                <label for="from">Vendor:</label>
+                <select id="from" name="from">
+                    {% for n in names -%}
+                        <option value="{{n}}">{{n}}</option>
+                    {% endfor -%}
+                </select>
+            </div>
+            <div class="row">
                 <label for="item">Item:</label>
-                <input id="item" name="item" type="item"/><br />
+                <select id="item" name="item">
+                    {% for n in names -%}
+                        <optgroup label="{{n}}">
+                            {% for iname in ledger_state[n][0] -%}
+                                <option value="{{iname}}">{{iname}}</option>
+                            {% endfor -%}
+                        </optgroup>
+                    {% endfor -%}
+                </select>
             </div>
             <div class="row">
                 <label for="count">Count:</label>
                 <input id="count" name="count" type="count"/><br />
-            </div>
-            <div class="row">
-                <label for="from">From:</label>
-                <input id="from" name="from" type="from"/><br />
             </div>
             <div class="row">
                 <label for="to">To:</label>

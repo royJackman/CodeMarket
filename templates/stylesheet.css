@@ -127,7 +127,7 @@ h3 {
     margin: 5px;
 }
 
-input {
+input, select {
     float: right;
 }
 

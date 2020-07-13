@@ -89,20 +89,6 @@ impl Ledger {
     /// * `self`    - The current ledger object
     pub fn get_vendors(&self) -> Vec<Vendor> { self.vendors.read().unwrap().clone() }
 
-    /// Get a copy of the items in stock for a particular vendor
-    /// 
-    /// # Arguments
-    /// 
-    /// * `self`    - The current ledger object
-    /// * `index`   - The index of the vendor in the internal session list
-    pub fn get_vendor_items(&self, index: usize) -> Vec<Item> {
-        let mut retval = vec![];
-        for i in self.vendors.read().unwrap()[index].get_items().iter() {
-            retval.push(Item::new(i.name.clone(), i.price.clone(), i.get_count(), 0));
-        }
-        retval
-    }
-
     /// Returns a list containing the names of all of the vendors
     /// 
     /// # Arguments
@@ -225,6 +211,28 @@ impl Ledger {
         }
     }
 
+    /// Serializes the ledger state into a mapping from vendor names to their
+    /// list of items with parallel lists for price and stock of that item
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
+    pub fn serialize_state(&self) -> HashMap<String, (Vec<String>, Vec<f64>, Vec<u32>)> {
+        let mut retval = HashMap::new();
+        for vendor in self.vendors.read().unwrap().iter() {
+            let mut item_names = vec![];
+            let mut item_prices = vec![];
+            let mut item_stock = vec![];
+            for item in vendor.get_items().iter() {
+                item_names.push(item.name.clone());
+                item_prices.push(item.price);
+                item_stock.push(item.get_count());
+            }
+            retval.insert(vendor.name.clone(), (item_names, item_prices, item_stock));
+        }
+        retval
+    }
+
     /// Prints the current average prices for all items in the ledger
     /// 
     /// # Arguments
@@ -269,6 +277,14 @@ impl Ledger {
             retval.insert(reverse[&i].clone(), t/(counts[i] as f64));
         }
 
+        retval
+    }
+
+    fn get_vendor_items(&self, index: usize) -> Vec<Item> {
+        let mut retval = vec![];
+        for i in self.vendors.read().unwrap()[index].get_items().iter() {
+            retval.push(Item::new(i.name.clone(), i.price.clone(), i.get_count(), 0));
+        }
         retval
     }
 

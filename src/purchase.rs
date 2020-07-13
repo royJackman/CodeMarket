@@ -5,6 +5,7 @@ use rocket::response::content;
 use rocket::request::{Form, FormError};
 use rocket::State;
 use rocket_contrib::templates::Template;
+use serde_json::to_value;
 
 //Holds purchase order data, merchandise goes FROM the SELLER, TO the BUYER
 #[derive(Debug, FromForm)]
@@ -145,8 +146,12 @@ pub fn form_purchase(order: Result<Form<Order>, FormError<'_>>, ledger: State<su
 
 /// Purchasing page GET endpoint
 #[get("/purchase")]
-pub fn purchase_page() -> Template {
+pub fn purchase_page(ledger: State<super::ledger::MutLedger>) -> Template {
     let mut map = super::HashMap::new();
-    map.insert("", "");
+    let arc_ledger = ledger.inner().session_ledger.clone();
+    let ledger = &*arc_ledger.read().unwrap();
+    let names = ledger.get_vendor_names();
+    map.insert("names", to_value(&names).unwrap());
+    map.insert("ledger_state", to_value(ledger.serialize_state()).unwrap());
     Template::render("purchase", &map)
 }

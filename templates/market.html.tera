@@ -8,12 +8,9 @@
         <div class="btn-group">
             <a class="button" href="/vendors/{{ vendor_urls[loop.index0] }}"><button><h3>{{ name }}</h3></button></a>
             <div>
-                {% set temp_count = intparse(num=item_count[loop.index0]) %}
-                {% for i in range(end=temp_count) -%}
-                    {% set curr = ind + i -%}
-                    <div class="centered"><strong>{{ all_items[curr] }}:</strong> <span>{{ all_prices[curr] }}</span></div>
-                {% endfor %}
-                {% set_global ind = ind + temp_count -%}
+                {% for item in ledger_state[name][0] -%}
+                    <div class="centered"><strong>{{ledger_state[name][0][loop.index0]}}:</strong>{{ledger_state[name][1][loop.index0]}}</div>
+                {% endfor -%}
             </div>
         </div>
     {% endfor %}

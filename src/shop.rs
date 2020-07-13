@@ -1,6 +1,7 @@
 use rocket::State;
 use rocket_contrib::templates::Template;
 use super::ledger::MutLedger;
+use serde_json::to_value;
 
 pub enum ShopError {
     ItemNotFound
@@ -177,24 +178,9 @@ pub fn market_home(ledger: State<MutLedger>) -> Template {
     let mut map = super::HashMap::new();
     let arc_ledger = ledger.inner().session_ledger.clone();
     let ledger = &*arc_ledger.read().unwrap();
-    let vendor_names = ledger.get_vendor_names();
-    map.insert("vendor_names", vendor_names.clone());
-    map.insert("vendor_urls", ledger.get_vendor_urls());
-    
-    let mut all_items = vec![];
-    let mut all_prices = vec![];
-    let mut item_count = vec![];
-    for i in 0..vendor_names.len() {
-        let temp_items = ledger.get_vendor_items(i);
-        item_count.push(temp_items.len().to_string());
-        for item in ledger.get_vendor_items(i) {
-            all_items.push(item.name.clone());
-            all_prices.push(item.price.clone().to_string());
-        }
-    }
-    map.insert("all_items", all_items);
-    map.insert("all_prices", all_prices);
-    map.insert("item_count", item_count);
+    map.insert("vendor_names", to_value(ledger.get_vendor_names()).unwrap());
+    map.insert("vendor_urls", to_value(ledger.get_vendor_urls()).unwrap());
+    map.insert("ledger_state", to_value(ledger.serialize_state()).unwrap());
     Template::render("market", &map)
 }
 
