@@ -81,6 +81,8 @@ fn main() {
                engines.tera.register_function("get_rust_type_index", tera_functions::make_get_rust_type_index(var.clone()));
                engines.tera.register_function("intparse", tera_functions::make_intparse(var.clone()));
            }))
-           .register(catchers![base::not_found])
+           .register(catchers![
+               base::internal_error,
+               base::not_found])
            .launch();
 }

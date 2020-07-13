@@ -1,0 +1,6 @@
+{% extends "base" %}
+
+{% block content %}
+    <h1>500 error: Internal issue</h1></br>
+    <h2>Oops! The page at {{ path }} is broke! :(</h2>
+{% endblock content %}

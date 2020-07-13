@@ -26,7 +26,19 @@ pub fn index(ledger: State<MutLedger>) -> Template {
     Template::render("index", &map)
 }
 
-/// 404 error catcher. 
+/// 500 error catcher
+/// 
+/// # Arguments
+/// 
+/// * `req` - The current http request information
+#[catch(500)]
+pub fn internal_error(req: &super::Request<'_>) -> Template {
+    let mut map = super::HashMap::new();
+    map.insert("path", req.uri().path());
+    Template::render("error/500", &map)
+}
+
+/// 404 error catcher
 /// 
 /// # Arguments
 /// 
