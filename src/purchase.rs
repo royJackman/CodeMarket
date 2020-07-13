@@ -1,20 +1,10 @@
 use std::collections::BTreeMap;
 use std::fmt::Display;
-use std::io::{self, Read};
 
-use rocket::data::{FromData, Outcome, Transform, Transformed};
-use rocket::http::Status;
 use rocket::response::content;
 use rocket::request::{Form, FormError};
-use rocket::{State, Request, Data, Outcome::*};
+use rocket::State;
 use rocket_contrib::templates::Template;
-
-const BUFFER_SIZE: u64 = 256;
-
-pub enum OrderError {
-    Io(io::Error),
-    Parse
-}
 
 //Holds purchase order data, merchandise goes FROM the SELLER, TO the BUYER
 #[derive(Debug, FromForm)]
@@ -23,68 +13,6 @@ pub struct Order {
     pub count: u32,
     pub from: String,
     pub to: String
-}
-
-impl Order {
-    pub fn from_data(data: OrderData) -> Order {
-        let clean_string = |string: &str| String::from(string).replace("\"", "").replace(",", "").replace("\r", "");
-        Order {
-            item: clean_string(data.item),
-            count: clean_string(data.count).parse().unwrap(),
-            from: clean_string(data.from),
-            to: clean_string(data.to)
-        }
-    }
-}
-
-#[derive(Deserialize, Debug)]
-pub struct OrderData<'a> {
-    pub item: &'a str,
-    pub count: &'a str,
-    pub from: &'a str,
-    pub to: &'a str
-}
-
-impl<'a> FromData<'a> for OrderData<'a> {
-    type Error = OrderError;
-    type Owned = String;
-    type Borrowed = str;
-
-    fn transform(_: &Request, data: Data) -> Transform<Outcome<Self::Owned, Self::Error>> {
-        let mut stream = data.open().take(BUFFER_SIZE);
-        let mut string = String::with_capacity((BUFFER_SIZE/4) as usize);
-        let outcome = match stream.read_to_string(&mut string) {
-            Ok(_) => Success(string),
-            Err(e) => Failure((Status::InternalServerError, Self::Error::Io(e)))
-        };
-
-        Transform::Borrowed(outcome)
-    }
-
-    fn from_data(_: &Request, outcome: Transformed<'a, Self>) -> Outcome<Self, Self::Error> {
-        let string = outcome.borrowed()?;
-        let tabboo: Vec<&str> = vec![&r"{", &r"}"];
-        let whitespace: Vec<&str> = vec![&"", &"\n"];
-        let splits: Vec<&str> = string.trim()
-                                      .split("\n")
-                                      .filter(move |x| {
-                                          for t in tabboo.iter() {
-                                              if x.contains(t) { return false }
-                                          }
-                                          for w in whitespace.iter() {
-                                              if x == w { return false }
-                                          }
-                                          true
-                                      })
-                                      .collect();
-        let to_remove: &[_] = &[',', '\n'];
-        Success(OrderData{
-            item: &splits[0].trim().trim_matches(to_remove).split("\"").filter(|x| x != &"").collect::<Vec<&str>>().last().unwrap(), 
-            count: &splits[1].trim().trim_matches(to_remove).split("\"").filter(|x| x != &"").collect::<Vec<&str>>().last().unwrap(), 
-            from: &splits[2].trim().trim_matches(to_remove).split("\"").filter(|x| x != &"").collect::<Vec<&str>>().last().unwrap(), 
-            to: &splits[3].trim().trim_matches(to_remove).split("\"").filter(|x| x != &"").collect::<Vec<&str>>().last().unwrap()
-        })
-    }
 }
 
 /// Function for performing a purchase, including confirming resources and
@@ -181,11 +109,16 @@ fn purchase(order: Order, ledger: State<super::ledger::MutLedger>) -> BTreeMap<S
 /// 
 /// * `order_data`  - The DTO for the purchase order being completed
 /// * `ledger`      - The current ledger state
-#[post("/purchase", format="application/json", data="<order_data>")]
-pub fn http_purchase(order_data: OrderData, ledger: State<super::ledger::MutLedger>) -> content::Json<String> {
-    let order = Order::from_data(order_data);
-    let output_vars = purchase(order, ledger);
-    super::util::construct_json(&output_vars)
+#[post("/purchase", data="<order>")]
+pub fn http_purchase(order: Result<Form<Order>, FormError<'_>>, ledger: State<super::ledger::MutLedger>) -> content::Json<String> {
+    match order {
+        Ok(o) => super::util::construct_json(&purchase(o.into_inner(), ledger)),
+        Err(_) => {
+            let mut output_vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();
+            output_vars.insert("Format".to_string(), Box::new("incorrect"));
+            super::util::construct_json(&output_vars)
+        }
+    }
 }
 
 /// Endpoint for manual purchase orders using a form
