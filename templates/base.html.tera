@@ -5,16 +5,22 @@
         <title>CodeMarket</title>
         <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.0/anime.min.js"></script>
         <script>
             var head = document.getElementsByTagName('HEAD')[0];
+
             var link = document.createElement('link');
             link.rel = 'stylesheet';
             link.type = 'text/css';
 
+            var script = document.createElement('script');
+
             var temp = window.location.pathname;
             var count = (temp.match(/\//g) || []).length;
-            link.href = '../'.repeat(count - 1).concat('stylesheet.css')
+            link.href = '../'.repeat(count - 1).concat('stylesheet.css');
             head.appendChild(link);
+            script.src = '../'.repeat(count - 1).concat('base.js');
+            head.appendChild(script);
         </script>
     </head>
     <body>

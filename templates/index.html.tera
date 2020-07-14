@@ -7,7 +7,7 @@
         <div class="btn-group flex-30">
             {% for t in types -%}
                 {% set rust_type_id = get_rust_type_index(data=t) -%}
-                <button id={{t}} onclick="renderData('{{t}}', {{history[rust_type_id]}})" value="{{t}}">{{t}}</button>
+                <button id={{t}} onclick="renderData('{{t}}', {{history[rust_type_id]}})" value="{{t}}" onmouseover="animate_button(this, 1.05, 800, 400)" onmouseout="animate_button(this, 1.0, 600, 300)">{{t}}</button>
             {% endfor -%}
         </div>
         <div id="graph-canvas" class="graph-canvas"/>
