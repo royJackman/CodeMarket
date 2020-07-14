@@ -8,7 +8,7 @@
         <form action="/form_purchase" method="post" accept-charset="utf-8">
             <div class="row">
                 <label for="from">Vendor:</label>
-                <select id="from" name="from">
+                <select id="from" name="from" onchange="update_item_dropdown(this)">
                     {% for n in names -%}
                         <option value="{{n}}">{{n}}</option>
                     {% endfor -%}
@@ -17,12 +17,8 @@
             <div class="row">
                 <label for="item">Item:</label>
                 <select id="item" name="item">
-                    {% for n in names -%}
-                        <optgroup label="{{n}}">
-                            {% for iname in ledger_state[n][0] -%}
-                                <option value="{{iname}}">{{iname}}</option>
-                            {% endfor -%}
-                        </optgroup>
+                    {% for iname in ledger_state[names[0]][0] -%}
+                        <option value="{{iname}}">{{iname}}</option>
                     {% endfor -%}
                 </select>
             </div>
@@ -37,4 +33,17 @@
             <input type="submit" value="Purchase">
         </form>
     </div>
+    <script type="text/javascript" src="purchase.js"></script>
+    <script>
+        state = {};
+        {% for n in names -%}
+            {% set curr_url = urls[loop.index0] -%}
+            {{curr_url}} = {};
+            {% for item in ledger_state[n][0] -%}
+            {{curr_url}}["{{item}}"] = {"price": {{ledger_state[n][1][loop.index0]}}, "count": {{ledger_state[n][2][loop.index0]}}};
+            {% endfor -%}
+            state["{{n}}"] = {{curr_url}};
+        {% endfor -%}
+        window.onload = function() { load_state(state); }
+    </script>
 {% endblock content %}

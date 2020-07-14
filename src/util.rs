@@ -5,7 +5,7 @@ use rand::Rng;
 use rand::seq::SliceRandom;
 use rocket::response::content;
 
-const ADJECTIVES: &'static [&'static str] = &["Dry", "Oafish", "Unusual", "Extra-Large", "Thirsty", "Alluring", "Bewildered", "Steadfast", "Rotund", "Unsightly", "Swanky", "Majestic", "Torpid", "Capricious", "Vacuous", "Exclusive"];
+const ADJECTIVES: &'static [&'static str] = &["Dry", "Oafish", "Unusual", "ExtraLarge", "Thirsty", "Alluring", "Bewildered", "Steadfast", "Rotund", "Unsightly", "Swanky", "Majestic", "Torpid", "Capricious", "Vacuous", "Exclusive"];
 const CATCHPHRASE: &'static [&'static str] = &["Best prices this side of the http", "1-800-bits4bytes", "Your favorite fiscal fenagler!", "Friendly neighborhood objectivism-man", "My manager \"produces\" value", "Great sales for the highest bidder!", "Being dead inside makes you more aerodynamic!", "Ask not what your vendor can sell to you, ask what you can buy from your vendor!", "Buy, or buy not, there is no haggle.", "Life is a box of types", "This is exactly how the dark web works", "Imagine how much easier this would be if we had healthcare"];
 const OCCUPATION: &'static [&'static str] = &["Vendor", "Dealer", "Merchant", "Hawker", "Peddler", "Huckster", "Clerk", "Salesperson", "Trader", "Agent", "Chef", "Agriculturalist", "Pusher", "Capitalist", "Suspect", "Seal Clubber"];
 const RUST_TYPES: &'static [&'static str] = &["bool", "u8", "u16", "u32", "u64", "u128", "i8", "i16", "i32", "i64", "i128", "f32", "f64", "str", "char", "never"];
