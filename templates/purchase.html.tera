@@ -16,7 +16,7 @@
             </div>
             <div class="row">
                 <label for="item">Item:</label>
-                <select id="item" name="item">
+                <select id="item" name="item" onchange="update_count_range(this)">
                     {% for iname in ledger_state[names[0]][0] -%}
                         <option value="{{iname}}">{{iname}}</option>
                     {% endfor -%}
@@ -24,7 +24,7 @@
             </div>
             <div class="row">
                 <label for="count">Count:</label>
-                <input id="count" name="count" type="count"/><br />
+                <input id="count" name="count" type="number" min="0" max="{{ledger_state[names[0]][2][0]}}"/><br />
             </div>
             <div class="row">
                 <label for="to">To:</label>

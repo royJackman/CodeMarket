@@ -7,6 +7,12 @@ function load_state(ledger_state) {
     localStorage.setItem('names', JSON.stringify(names));
 }
 
+function update_count_range(item_object) {
+    let vendor = document.getElementById("from").value;
+    let item = JSON.parse(localStorage.getItem(vendor))[item_object.value];
+    document.getElementById("count").max = item.count;
+}
+
 function update_item_dropdown(vendor_object) {
     let items = JSON.parse(localStorage.getItem(vendor_object.value));
     var temp_select = document.createElement("select");
