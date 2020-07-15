@@ -35,6 +35,10 @@ body {
     width: 100%;
 }
 
+.btn-group button:focus {
+    outline: none;
+}
+
 .btn-group button:hover {
     background-color: rgb(60, 60, 60);
 }
