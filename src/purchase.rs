@@ -150,7 +150,6 @@ pub fn purchase_page(ledger: State<super::ledger::MutLedger>) -> Template {
     let mut map = super::HashMap::new();
     let arc_ledger = ledger.inner().session_ledger.clone();
     let ledger = &*arc_ledger.read().unwrap();
-    // let names = ledger.get_vendor_names();
     map.insert("names", to_value(ledger.get_vendor_names()).unwrap());
     map.insert("urls", to_value(ledger.get_vendor_urls()).unwrap());
     map.insert("ledger_state", to_value(ledger.serialize_state()).unwrap());

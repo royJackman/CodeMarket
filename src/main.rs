@@ -67,8 +67,9 @@ fn main() {
            .manage( ledger::MutLedger{session_ledger: Arc::new(RwLock::new(session_ledger))} )
            .mount("/", StaticFiles::from("templates"))
            .mount("/", routes![
-               base::index, 
                authorization::register, 
+               base::index,
+               ledger::request_ledger_state,
                purchase::http_purchase, 
                purchase::form_purchase, 
                purchase::purchase_page])

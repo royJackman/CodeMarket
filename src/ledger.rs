@@ -1,13 +1,23 @@
+use rand::Rng;
+use rocket::response::content;
+use rocket::request::{Form, FormError};
+use rocket::State;
+use serde_json::{to_string, to_value};
+use std::collections::{BTreeMap, HashMap, HashSet};
+use std::fmt::Display;
+use std::sync::{Arc, RwLock};
 use super::shop::{Vendor, Item};
 use super::{nanoid, util};
-use rand::Rng;
-use std::sync::{Arc, RwLock};
-use std::collections::{HashMap, HashSet};
 
 pub enum LedgerError {
     ExistingVendor,
     ExistingUrl,
     InvalidVendor
+}
+
+#[derive(FromForm)]
+pub struct UUID {
+    pub uuid: String
 }
 
 //Change of goods at a vendor
@@ -296,3 +306,43 @@ impl Ledger {
 }
 
 pub struct MutLedger { pub session_ledger: Arc<RwLock<Ledger>> }
+
+/// Endpoint to get ledger data via http request
+/// 
+/// # Arguments
+/// 
+/// * `uuid`    - The unique user ID of the vendor requesting the current
+/// ledger state, this is to confirm legitimacy with the server
+#[allow(unused_assignments, unused_variables)]
+#[post("/ledger_state", data="<uuid>")]
+pub fn request_ledger_state(uuid: Result<Form<UUID>, FormError<'_>>, ledger: State<MutLedger>) -> content::Json<String> {
+    let arc_ledger = ledger.inner().session_ledger.clone();
+    let internal_id: usize;
+    let mut output_vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();
+    let ledger_state = match uuid {
+        Ok(u) => {
+            let ledger = &*arc_ledger.read().unwrap();
+            match ledger.verify_uuid(u.into_inner().uuid) {
+                Ok(id) => {
+                    internal_id = id;
+                    ledger.serialize_state()
+                },
+                Err(_) => {
+                    output_vars.insert("UUID".to_string(), Box::new("not found".to_string()));
+                    return util::construct_json(&output_vars);
+                }
+            }
+        },
+        Err(_) => {
+            output_vars.insert("Form".to_string(), Box::new("incorrectly formatted".to_string()));
+            return util::construct_json(&output_vars);
+        }
+    };
+
+    {
+        let ledger = &*arc_ledger.write().unwrap();
+        ledger.vendor_versions.write().unwrap()[internal_id] = ledger.version;
+    }
+
+    return content::Json(to_string(&ledger_state).unwrap());
+}
