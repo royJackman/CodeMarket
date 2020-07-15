@@ -53,8 +53,7 @@ div.graph-container {
 }
 
 div.graph-canvas {
-    background-color: white;
-    border-color: whitesmoke;
+    background-color: #333;
     border-radius: 5px;
     flex: 70%;
     height: 70vh;

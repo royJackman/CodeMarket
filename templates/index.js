@@ -1,20 +1,3 @@
-function renderGraph(type) {
-    var graph_canvas = document.getElementById('graph-canvas');
-    graph_canvas.value = type.value;
-    var data = [
-        {
-            line: { color: '#00F000'},
-            type: 'scatter',
-            x: [1, 2, 3, 4, 5, 6, 7],
-            y: [512.77, 633.56, 411.45, 300, 205.3, 706.13, 800],
-        }
-    ];
-    var layout = {
-        title: type.value,
-    };
-    Plotly.newPlot('graph-canvas', data, layout);
-}
-
 function renderData(name, data) {
     var datum = [
         {
@@ -25,14 +8,29 @@ function renderData(name, data) {
         }
     ];
     var layout = {
-        title: name,
+        font: {
+            color: '#CCC'
+        },
+        grid: true,
+        paper_bgcolor: '#333',
+        plot_bgcolor: '#666',
+        title: {
+            font: {
+                size: 24
+            },
+            text: name.concat(' average price over time')
+        },
         xaxis: {
-            autotick: false,
-            dtick: 1,
+            gridcolor: '#AAA',
+            title: 'Ledger Version',
+            tickcolor: '#AAA',
             tick0: 0
         },
         yaxis: { 
-            range: [0, 10]
+            gridcolor: '#AAA',
+            title: 'Item Price',
+            range: [0, 10],
+            tickcolor: '#AAA'
         }
     };
     var d3 = Plotly.d3;
