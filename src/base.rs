@@ -3,6 +3,18 @@ use rocket_contrib::templates::Template;
 use serde_json::to_value;
 use super::ledger::MutLedger;
 
+/// 400 error catcher
+/// 
+/// # Arguments
+/// 
+/// * `req` - The current http request information
+#[catch(400)]
+pub fn bad_request(req: &super::Request<'_>) -> Template {
+    let mut map = super::HashMap::new();
+    map.insert("path", req.uri().path());
+    Template::render("error/400", &map)
+}
+
 /// Index page for the application. Contains overview information for the
 /// current market state and price distribution.
 /// 

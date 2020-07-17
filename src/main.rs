@@ -83,6 +83,7 @@ fn main() {
                engines.tera.register_function("intparse", tera_functions::make_intparse(var.clone()));
            }))
            .register(catchers![
+               base::bad_request,
                base::internal_error,
                base::not_found])
            .launch();
