@@ -312,7 +312,7 @@ pub struct MutLedger { pub session_ledger: Arc<RwLock<Ledger>> }
 /// # Arguments
 /// 
 /// * `uuid`    - The unique user ID of the vendor requesting the current
-/// ledger state, this is to confirm legitimacy with the server
+///               ledger state, this is to confirm legitimacy with the server
 #[allow(unused_assignments, unused_variables)]
 #[post("/ledger_state", data="<uuid>")]
 pub fn request_ledger_state(uuid: Result<Form<UUID>, FormError<'_>>, ledger: State<MutLedger>) -> content::Json<String> {

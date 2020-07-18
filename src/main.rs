@@ -69,10 +69,11 @@ fn main() {
            .mount("/", routes![
                authorization::register, 
                base::index,
-               ledger::request_ledger_state,
-               purchase::http_purchase, 
                purchase::form_purchase, 
                purchase::purchase_page])
+           .mount("/api", routes![
+               ledger::request_ledger_state,
+               purchase::http_purchase])
            .mount("/vendors", routes![
                shop::market_home, 
                shop::vendor])
