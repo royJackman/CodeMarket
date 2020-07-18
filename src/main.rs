@@ -16,6 +16,7 @@ use config::*;
 use rocket::Request;
 use rocket_contrib::serve::StaticFiles;
 use rocket_contrib::templates::Template;
+use serde::de;
 
 mod authorization;
 mod base;
@@ -27,11 +28,23 @@ pub mod shop;
 pub mod util;
 
 lazy_static! {
-    pub static ref CONFIG: RwLock<Config> = RwLock::new({
+    static ref CONFIG: RwLock<Config> = RwLock::new({
         let mut options = Config::default();
         options.merge(File::with_name("Config.toml")).unwrap();
         options
     });
+}
+
+/// Try to get a value from the config file
+/// 
+/// # Arguments
+/// 
+/// * `key` - The key to check in the config
+pub fn get_config<T: de::DeserializeOwned>(key: &str) -> Option<T> {
+    match CONFIG.read().unwrap().get::<T>(key) {
+        Ok(val) => Some(val),
+        Err(_) => None
+    }
 }
 
 /// Rust market launching point. This function starts the application, default
@@ -44,15 +57,15 @@ lazy_static! {
 fn main() {
     let mut session_ledger = ledger::Ledger::new();
     let mut ids = vec![];
-    match CONFIG.read().unwrap().get::<usize>("generated_vendors") {
-        Ok(gv) => {
+    match get_config::<usize>("generated_vendors") {
+        Some(gv) => {
             for mut i in 0..gv {
                 match session_ledger.register_vendor(util::name_generator(), None) {
                     Ok(id) => { ids.push(id); }, Err(_) => { i -= 1; }
                 }
             }
         },
-        Err(_) => {
+        None => {
             ids.push(session_ledger.register_vendor(util::name_generator(), None).unwrap_or("".to_string()));
             ids.push(session_ledger.register_vendor(util::name_generator(), Some("oldies".to_string())).unwrap_or("".to_string()));
             ids.push(session_ledger.register_vendor(util::name_generator(), None).unwrap_or("".to_string()));
