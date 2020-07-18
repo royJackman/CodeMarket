@@ -1,0 +1,6 @@
+{% extends "base" %}
+
+{% block content %}
+    <h1>400 error: Bad Request</h1></br>
+    <h2>Your request to {{path}} was badly formatted!</h2>
+{% endblock content %}

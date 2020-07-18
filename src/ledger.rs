@@ -2,7 +2,7 @@ use rand::Rng;
 use rocket::response::content;
 use rocket::request::{Form, FormError};
 use rocket::State;
-use serde_json::{to_string, to_value};
+use serde_json::to_string;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fmt::Display;
 use std::sync::{Arc, RwLock};
