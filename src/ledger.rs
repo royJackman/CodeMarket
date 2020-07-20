@@ -187,16 +187,21 @@ impl Ledger {
             }
         }
 
-        let mut retval = Vendor::new(name.clone(), url.unwrap(), 1000.0);
+        let initial_bits = match super::get_config::<f64>("initial_bits") { Some(ib) => ib, None => 1000.0 };
+        let item_count = match super::get_config::<u32>("item_count") { Some(ic) => ic, None => 50 };
+        let min_items = match super::get_config::<usize>("min_items") { Some(mai) => mai, None => 3 };
+        let max_items = match super::get_config::<usize>("max_items") { Some(mii) => mii, None => 6 };
+
+        let mut retval = Vendor::new(name.clone(), url.unwrap(), initial_bits);
         {
             let mut entries = self.entries.write().unwrap();
             let mut rng = rand::thread_rng();
 
-            for t in util::get_rust_types(4).iter() {
+            for t in util::get_rust_types(rng.gen_range(min_items, max_items + 1)).iter() {
                 {
                     self.ledger_items.write().unwrap().insert(t.to_string());
                 }
-                let i1 = Item::new(t.to_string(), rng.gen_range(4.0, 6.0), rng.gen_range(40, 60), 0);
+                let i1 = Item::new(t.to_string(), 0.0, 0, item_count);
                 entries.push(Entry::new(self.version + 1, retval.name.clone(), i1.name.clone(), i1.get_count() as i32, i1.price));
                 &retval.add_item(i1, false);
             }
@@ -241,6 +246,22 @@ impl Ledger {
             retval.insert(vendor.name.clone(), (item_names, item_prices, item_stock));
         }
         retval
+    }
+
+    /// Serializes a vendor using the same list structure in the ledger state
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`        - The current ledger object
+    /// * `vendor_id`   - The vendor to serialize
+    pub fn serialize_vendor(&self, vendor_id: usize) -> (Vec<String>, Vec<f64>, Vec<u32>) {
+        let mut item_names = vec![];
+        let mut item_store = vec![];
+        for item in self.get_vendor(vendor_id).get_items().iter() {
+            item_names.push(item.name.clone());
+            item_store.push(item.get_stored());
+        }
+        (item_names, vec![], item_store)
     }
 
     /// Prints the current average prices for all items in the ledger
@@ -318,13 +339,15 @@ pub struct MutLedger { pub session_ledger: Arc<RwLock<Ledger>> }
 pub fn request_ledger_state(uuid: Result<Form<UUID>, FormError<'_>>, ledger: State<MutLedger>) -> content::Json<String> {
     let arc_ledger = ledger.inner().session_ledger.clone();
     let internal_id: usize;
+    let serialized_vendor;
     let mut output_vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();
-    let ledger_state = match uuid {
+    let mut ledger_state = match uuid {
         Ok(u) => {
             let ledger = &*arc_ledger.read().unwrap();
             match ledger.verify_uuid(u.into_inner().uuid) {
                 Ok(id) => {
                     internal_id = id;
+                    serialized_vendor = ledger.serialize_vendor(id);
                     ledger.serialize_state()
                 },
                 Err(_) => {
@@ -343,6 +366,8 @@ pub fn request_ledger_state(uuid: Result<Form<UUID>, FormError<'_>>, ledger: Sta
         let ledger = &*arc_ledger.write().unwrap();
         ledger.vendor_versions.write().unwrap()[internal_id] = ledger.version;
     }
+
+    ledger_state.insert("stored".to_string(), serialized_vendor);
 
     return content::Json(to_string(&ledger_state).unwrap());
 }

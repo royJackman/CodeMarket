@@ -1,1 +1,5 @@
 generated_vendors = 4
+initial_bits = 1000
+item_count = 50
+min_items = 3
+max_items = 6

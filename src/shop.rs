@@ -28,6 +28,13 @@ impl Item {
     /// * `self`    - The current item object
     pub fn get_count(&self) -> u32 { self.stocked }
 
+    /// Gets the vendor's store for this item
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current item object
+    pub fn get_stored(&self) -> u32 { self.stored }
+
     fn sell_item(&mut self, count: u32) -> u32 {
         if self.stocked >= count {
             self.stocked -= count;
