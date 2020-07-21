@@ -9,7 +9,6 @@ extern crate nanoid;
 #[cfg(test)] mod tests;
 
 use std::collections::{HashMap, BTreeMap};
-use std::fmt;
 use std::sync::{Arc, RwLock};
 
 use config::*;
@@ -83,7 +82,8 @@ fn main() {
                authorization::register, 
                base::index,
                purchase::form_purchase, 
-               purchase::purchase_page])
+               purchase::purchase_page,
+               shop::stock_page])
            .mount("/api", routes![
                ledger::request_ledger_state,
                purchase::http_purchase])

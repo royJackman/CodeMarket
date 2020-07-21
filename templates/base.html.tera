@@ -32,6 +32,7 @@
                     <a>Actions</a>
                     <div class="dropdown-content">
                         <a href="/purchase">Purchase</a>
+                        <a href="/stock">Stock</a>
                     </div>
                 </div></li>
                 <div class="ticker"><div class="ticker-wrap"><div class="ticker-move">

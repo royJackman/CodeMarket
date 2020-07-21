@@ -1,0 +1,18 @@
+{% extends "base" %}
+
+{% block content %}
+    <h1>Stock an item</h1></br>
+    <h3>Stock your stored items for cutomers to buy!</h3></br>
+    <script>
+        state = {};
+        {% for n in names -%}
+            {% set curr_url = urls[loop.index0] -%}
+            {{curr_url}} = {};
+            {% for item in ledger_state[n][0] -%}
+            {{curr_url}}["{{item}}"] = {"price": {{ledger_state[n][1][loop.index0]}}, "count": {{ledger_state[n][2][loop.index0]}}};
+            {% endfor -%}
+            state["{{n}}"] = {{curr_url}};
+        {% endfor -%}
+        window.onload = function() { load_state(state); }
+    </script>
+{% endblock content %}
