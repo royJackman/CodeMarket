@@ -271,6 +271,18 @@ impl Ledger {
     /// * `self`    - The current ledger object
     pub fn show_avg_prices(&self) { println!("{:#?}", self.calculate_avg_prices()) }
 
+    /// Updates a single item in the ledger
+    /// 
+    /// # Arguments
+    /// 
+    /// * `vendor_id`   - The ID of the vendor whose item needs changing
+    /// * `item`        - The item to change
+    /// * `price`       - New price of the item
+    /// * `count`       - The change from store to stock
+    pub fn update_item(&mut self, vendor_id: usize, item: String, price: f64, count: i32) {
+        self.vendors.write().unwrap()[vendor_id].update_item(item, price, count);
+    }
+
     /// Verifies the nanoid of a user request and returns internal vendor list
     /// index if it exists
     /// 

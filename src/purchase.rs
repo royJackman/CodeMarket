@@ -128,7 +128,7 @@ pub fn http_purchase(order: Result<Form<Order>, FormError<'_>>, ledger: State<su
 /// 
 /// * `order`   - The purchase order information from the form
 /// * `ledger`  - The current ledger state
-#[post("/form_purchase", data="<order>")]
+#[post("/purchase", data="<order>")]
 pub fn form_purchase(order: Result<Form<Order>, FormError<'_>>, ledger: State<super::ledger::MutLedger>) -> Template {
     let mut map = super::HashMap::new();
     let mut response = match order {

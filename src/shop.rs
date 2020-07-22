@@ -1,19 +1,33 @@
+
+use rocket::response::content;
+use rocket::request::{Form, FormError};
 use rocket::State;
 use rocket_contrib::templates::Template;
 use super::ledger::MutLedger;
 use serde_json::to_value;
+use std::collections::BTreeMap;
+use std::fmt;
+use std::fmt::Display;
 
 pub enum ShopError {
     ItemNotFound
 }
 
 //Item of merchandise, for transfer, uses stocked and stored
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Item {
     pub name: String,
     pub price: f64,
     stocked: u32,
     stored: u32
+}
+
+#[derive(Debug, FromForm)]
+pub struct AuthItem {
+    pub name: String,
+    pub price: f64,
+    pub stock: i32,
+    pub uuid: String
 }
 
 impl Item {
@@ -61,6 +75,19 @@ impl Item {
     }
 
     fn total(&self) -> u32 { self.stocked + self.stored }
+
+    fn update(&mut self, price: f64, count: i32) {
+        self.price = price;
+        if count > 0 {
+            let diff = std::cmp::min(self.stored, count as u32);
+            self.stored -= diff;
+            self.stocked += diff;
+        } else {
+            let diff = std::cmp::min(self.stocked, (-count) as u32);
+            self.stocked -= diff;
+            self.stored += diff;
+        }
+    }
 }
 
 impl PartialEq for Item {
@@ -145,6 +172,18 @@ impl Vendor {
         }
     }
 
+    /// Updates the price and the counts of the item
+    /// 
+    /// # Arguments
+    /// 
+    /// * `self`    - The current ledger object
+    /// * `item`    - The name of the item to update
+    /// * `price`   - The new price of the item
+    /// * `count`   - The change from store to stock
+    pub fn update_item(&mut self, item: String, price: f64, count: i32) {
+        if let Some(i) = self.grab_item(&item) { i.update(price, count); }
+    }
+
     fn grab_item(&mut self, name: &String) -> Option<&mut Item> {
         self.items.iter_mut().find(|i| &i.name == name)
     }
@@ -162,8 +201,8 @@ impl PartialEq for Vendor {
     }
 }
 
-impl super::fmt::Debug for Vendor {
-    fn fmt(&self, f: &mut super::fmt::Formatter<'_>) -> super::fmt::Result {
+impl fmt::Debug for Vendor {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Vendor")
          .field("Name", &self.name)
          .field("Url", &self.url)
@@ -213,6 +252,58 @@ pub fn vendor(url: String, ledger: State<MutLedger>) -> Template {
             let mut map = super::HashMap::new();
             map.insert("path", &url);
             Template::render("error/404", map)
+        }
+    }
+}
+
+/// A function for updating the state of an object through changing the price
+/// and moving units from the stock to the store or vice versa
+/// 
+/// # Arguments
+/// 
+/// `auth_item` - The auth item change request
+/// `ledger`    - The current ledger state
+fn stock(auth_item: AuthItem, ledger: State<super::ledger::MutLedger>) -> BTreeMap<String, Box<dyn Display>> {
+    let arc_ledger = ledger.inner().session_ledger.clone();
+    let vendor_id: usize;
+
+    let mut output_vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();
+
+    {
+        let ledger = &*arc_ledger.read().unwrap();
+        vendor_id = match ledger.verify_uuid(auth_item.uuid) {
+            Ok(id) => id,
+            Err(_) => {
+                output_vars.insert("success".to_string(), Box::new(false));
+                output_vars.insert("UUID".to_string(), Box::new("not recognized".to_string()));
+                return output_vars;
+            }
+        };
+    }
+
+    {
+        let mut ledger = (&*arc_ledger).write().unwrap();
+        ledger.update_item(vendor_id, auth_item.name, auth_item.price, auth_item.stock);
+    }
+
+    output_vars.insert("success".to_string(), Box::new(true));
+    output_vars
+}
+
+/// Endpoint for making stock orders via HTTP request
+/// 
+/// # Arguments
+/// 
+/// * `auth_item`   - The DTO for the stock order being completed
+/// * `ledger`      - The current ledger state
+#[post("/stock", data="<auth_item>")]
+pub fn http_stock(auth_item: Result<Form<AuthItem>, FormError<'_>>, ledger: State<super::ledger::MutLedger>) -> content::Json<String> {
+    match auth_item {
+        Ok(ai) => super::util::construct_json(&stock(ai.into_inner(), ledger)),
+        Err(_) => {
+            let mut output_vars: BTreeMap<String, Box<dyn Display>> = BTreeMap::new();
+            output_vars.insert("Format".to_string(), Box::new("incorrect"));
+            super::util::construct_json(&output_vars)
         }
     }
 }

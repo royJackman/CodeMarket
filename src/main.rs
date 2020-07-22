@@ -86,7 +86,8 @@ fn main() {
                shop::stock_page])
            .mount("/api", routes![
                ledger::request_ledger_state,
-               purchase::http_purchase])
+               purchase::http_purchase,
+               shop::http_stock])
            .mount("/vendors", routes![
                shop::market_home, 
                shop::vendor])

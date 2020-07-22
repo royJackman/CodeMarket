@@ -5,7 +5,7 @@
     <h3>Buy objects with bits</h3></br>
     <strong>Confirmed purchases are final</strong><br />
     <div class="form">
-        <form action="/form_purchase" method="post" accept-charset="utf-8">
+        <form action="/purchase" method="post" accept-charset="utf-8">
             <div class="row">
                 <label for="from">Vendor:</label>
                 <select id="from" name="from" onchange="update_item_dropdown(this)">
