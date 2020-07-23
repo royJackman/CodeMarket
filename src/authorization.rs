@@ -51,7 +51,7 @@ pub fn register(registration: Result<Form<Registration>, FormError<'_>>, ledger:
     if output_vars.len() > 0 {
         return super::util::construct_json(&output_vars)
     } else {
-        let url = match registration.vendor_url.contains(":") {
+        let url = match registration.vendor_url == "".to_string() || registration.vendor_url.contains(":") {
             true => None, false => Some(registration.vendor_url)
         };
         let mut ledger = (*arc_ledger).write().unwrap();
