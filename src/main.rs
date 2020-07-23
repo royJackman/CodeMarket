@@ -83,6 +83,7 @@ fn main() {
                base::index,
                purchase::form_purchase, 
                purchase::purchase_page,
+               shop::form_stock,
                shop::stock_page])
            .mount("/api", routes![
                ledger::request_ledger_state,

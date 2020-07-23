@@ -308,6 +308,28 @@ pub fn http_stock(auth_item: Result<Form<AuthItem>, FormError<'_>>, ledger: Stat
     }
 }
 
+/// Endpoint for manual stock orders using a form
+/// 
+/// # Arguments
+/// 
+/// * `auth_item`   - The DTO for the stock order being completed
+/// * `ledger`      - The current ledger state
+#[post("/stock", data="<auth_item>")]
+pub fn form_stock(auth_item: Result<Form<AuthItem>, FormError<'_>>, ledger: State<super::ledger::MutLedger>) -> Template {
+    let mut map = super::HashMap::new();
+    let mut response = match auth_item {
+        Ok(ai) => stock(ai.into_inner(), ledger),
+        Err(_) => {
+            map.insert("errors", vec!["AuthItem was not filled out".to_string()]);
+            return Template::render("stock", &map)
+        }
+    };
+    for (k, v) in response.iter_mut() {
+        map.insert(k, vec![format!("{}", *v)]);
+    }
+    Template::render("stock_response", &map)
+}
+
 /// Stocking page GET endpoint
 #[get("/stock")]
 pub fn stock_page(ledger: State<super::ledger::MutLedger>) -> Template {

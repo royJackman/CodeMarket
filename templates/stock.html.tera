@@ -3,16 +3,25 @@
 {% block content %}
     <h1>Stock an item</h1></br>
     <h3>Stock your stored items for cutomers to buy!</h3></br>
-    <script>
-        state = {};
-        {% for n in names -%}
-            {% set curr_url = urls[loop.index0] -%}
-            {{curr_url}} = {};
-            {% for item in ledger_state[n][0] -%}
-            {{curr_url}}["{{item}}"] = {"price": {{ledger_state[n][1][loop.index0]}}, "count": {{ledger_state[n][2][loop.index0]}}};
-            {% endfor -%}
-            state["{{n}}"] = {{curr_url}};
-        {% endfor -%}
-        window.onload = function() { load_state(state); }
-    </script>
+    <div class="form">
+        <form action="/stock" method="post" accept-charset="utf-8">
+            <div class="row">
+                <label for="name">Item:</label>
+                <input id="name" name="name" type="name"/><br /><br />
+            </div>
+            <div class="row">
+                <label for="stock">Count:</label>
+                <input id="stock" name="stock" type="number"/><br />
+            </div>
+            <div class="row">
+                <label for="price">Price:</label>
+                <input id="price" name="price" type="number" min=0 step="any"/><br />
+            </div>
+            <div class="row">
+                <label for="uuid">UUID:</label>
+                <input id="uuid" name="uuid" type="uuid"/><br /><br />
+            </div>
+            <input type="submit" value="Stock">
+        </form>
+    </div>
 {% endblock content %}
