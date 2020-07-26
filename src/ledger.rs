@@ -383,3 +383,21 @@ pub fn request_ledger_state(uuid: Result<Form<UUID>, FormError<'_>>, ledger: Sta
 
     return content::Json(to_string(&ledger_state).unwrap());
 }
+
+/// Endpoint to get vendor names via http request
+#[get("/vendor_names")]
+pub fn request_vendor_names(ledger: State<MutLedger>) -> content::Json<String> {
+    let arc_ledger = ledger.inner().session_ledger.clone();
+    let ledger = &*arc_ledger.read().unwrap();
+    let vendor_names = ledger.get_vendor_names();
+    return content::Json(to_string(&vendor_names).unwrap());
+}
+
+/// Endpoint to get vendor urls via http request
+#[get("/vendor_urls")]
+pub fn request_vendor_urls(ledger: State<MutLedger>) -> content::Json<String> {
+    let arc_ledger = ledger.inner().session_ledger.clone();
+    let ledger = &*arc_ledger.read().unwrap();
+    let vendor_urls = ledger.get_vendor_urls();
+    return content::Json(to_string(&vendor_urls).unwrap());
+}
