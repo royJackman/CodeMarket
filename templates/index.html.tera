@@ -1,7 +1,7 @@
 {% extends "base" %}
 
 {% block content %}
-    <h1>The Rust Market</h1></br>
+    <h1>The Code Market</h1></br>
     <h2>Here we sell Rust primitives for bits</h2></br>
     <div class="graph-container">
         <div class="btn-group flex-30 width-20">
