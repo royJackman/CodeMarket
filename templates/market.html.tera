@@ -3,15 +3,22 @@
 {% block content %}
     <h1>Available vendors</h1></br>
     <h3>Here are your vendors, aranged in random order, for your convenience</h3></br>
-    {% set_global ind = 0 %}
-    {% for name in vendor_names %}
-        <div class="btn-group">
-            <a class="button" href="/vendors/{{ vendor_urls[loop.index0] }}"><button onmouseover="animate_button(this, 1.05, 800, 400)" onmouseout="animate_button(this, 1.0, 600, 300)"><h3>{{ name }}</h3></button></a>
-            <div>
-                {% for item in ledger_state[name][0] -%}
-                    <div class="centered"><strong>{{ledger_state[name][0][loop.index0]}}:</strong>{{ledger_state[name][1][loop.index0]}}</div>
-                {% endfor -%}
+    <div class="market">
+        <div class="vendor-btns">
+        {% set_global ind = 0 %}
+        {% for name in vendor_names %}
+            <div class="btn-group">
+                <a class="button" href="/vendors/{{ vendor_urls[loop.index0] }}"><button onmouseover="animate_button(this, 1.05, 800, 400)" onmouseout="animate_button(this, 1.0, 600, 300)"><h3>{{ name }}</h3></button></a>
+                <div>
+                    {% for item in ledger_state[name][0] -%}
+                        <div class="centered"><strong>{{ledger_state[name][0][loop.index0]}}:</strong>{{ledger_state[name][1][loop.index0]}}</div>
+                    {% endfor -%}
+                </div>
             </div>
+        {% endfor %}
         </div>
-    {% endfor %}
+        <div class="centered market-content">
+            This is going to be market specific content
+        </div>
+    </div>
 {% endblock content %}
