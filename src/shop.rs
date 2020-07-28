@@ -212,49 +212,6 @@ impl fmt::Debug for Vendor {
     }
 }
 
-/// An endpoint that displays all of the vendors currently in the market with
-/// the prices of their goods
-/// 
-/// # Arguments
-/// 
-/// * `ledger`    - The current ledger state
-#[get("/")]
-pub fn market_home(ledger: State<MutLedger>) -> Template {
-    let mut map = super::HashMap::new();
-    let arc_ledger = ledger.inner().session_ledger.clone();
-    let ledger = &*arc_ledger.read().unwrap();
-    map.insert("vendor_names", to_value(ledger.get_vendor_names()).unwrap());
-    map.insert("vendor_urls", to_value(ledger.get_vendor_urls()).unwrap());
-    map.insert("ledger_state", to_value(ledger.serialize_state()).unwrap());
-    Template::render("market", &map)
-}
-
-/// An endpoint for individual vendors
-/// 
-/// # Arguments
-/// 
-/// * `url`       - The url of the vendor
-/// * `ledger`    - The current ledger state
-#[get("/<url>")]
-pub fn vendor(url: String, ledger: State<MutLedger>) -> Template {
-    let arc_ledger = ledger.inner().session_ledger.clone();
-    let ledger = &*arc_ledger.read().unwrap();
-    let vendors = ledger.get_vendors();
-    let vend = vendors.iter().find(|x| x.url == url);
-    match vend {
-        Some(v) => {
-            let mut map = super::HashMap::new();
-            map.insert("vendor", &v);
-            Template::render("vendor", map)
-        }
-        None => {
-            let mut map = super::HashMap::new();
-            map.insert("path", &url);
-            Template::render("error/404", map)
-        }
-    }
-}
-
 /// A function for updating the state of an object through changing the price
 /// and moving units from the stock to the store or vice versa
 /// 
@@ -287,6 +244,53 @@ fn stock(auth_item: AuthItem, ledger: State<super::ledger::MutLedger>) -> BTreeM
 
     output_vars.insert("success".to_string(), Box::new(true));
     output_vars
+}
+
+/// An endpoint that displays all of the vendors currently in the market with
+/// the prices of their goods
+/// 
+/// # Arguments
+/// 
+/// * `ledger`    - The current ledger state
+#[get("/")]
+pub fn market_home(ledger: State<MutLedger>) -> Template {
+    let mut map = super::HashMap::new();
+    let arc_ledger = ledger.inner().session_ledger.clone();
+    let ledger = &*arc_ledger.read().unwrap();
+    map.insert("vendor_names", to_value(ledger.get_vendor_names()).unwrap());
+    map.insert("vendor_urls", to_value(ledger.get_vendor_urls()).unwrap());
+    map.insert("ledger_state", to_value(ledger.serialize_state()).unwrap());
+    map.insert("ticker_items", to_value(vec!["All purchases are final!",
+                                             "Stocked items are available for synchronous sale!",
+                                             "Please keep your hands and feet inside tht market at all times",
+                                             "Wear a mask."]).unwrap());
+    Template::render("market", &map)
+}
+
+/// An endpoint for individual vendors
+/// 
+/// # Arguments
+/// 
+/// * `url`       - The url of the vendor
+/// * `ledger`    - The current ledger state
+#[get("/<url>")]
+pub fn vendor(url: String, ledger: State<MutLedger>) -> Template {
+    let arc_ledger = ledger.inner().session_ledger.clone();
+    let ledger = &*arc_ledger.read().unwrap();
+    let vendors = ledger.get_vendors();
+    let vend = vendors.iter().find(|x| x.url == url);
+    match vend {
+        Some(v) => {
+            let mut map = super::HashMap::new();
+            map.insert("vendor", &v);
+            Template::render("vendor", map)
+        }
+        None => {
+            let mut map = super::HashMap::new();
+            map.insert("path", &url);
+            Template::render("error/404", map)
+        }
+    }
 }
 
 /// Endpoint for making stock orders via HTTP request
