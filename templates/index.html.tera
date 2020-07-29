@@ -1,10 +1,10 @@
 {% extends "base" %}
 
 {% block content %}
-    <h1>The Rust Market</h1></br>
+    <h1>The Code Market</h1></br>
     <h2>Here we sell Rust primitives for bits</h2></br>
     <div class="graph-container">
-        <div class="btn-group flex-30">
+        <div class="btn-group flex-30 width-20">
             {% for t in types -%}
                 {% set rust_type_id = get_rust_type_index(data=t) -%}
                 <button id={{t}} onclick="renderData('{{t}}', {{history[rust_type_id]}})" value="{{t}}" onmouseover="animate_button(this, 1.03, 800, 400)" onmouseout="animate_button(this, 1.0, 600, 300)">{{t}}</button>

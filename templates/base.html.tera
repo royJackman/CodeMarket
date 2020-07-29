@@ -15,12 +15,20 @@
 
             var script = document.createElement('script');
 
+            var icon = document.createElement('link');
+            icon.rel = 'icon';
+            icon.type = 'image/png';
+            icon.sizes = '32x32';
+
             var temp = window.location.pathname;
             var count = (temp.match(/\//g) || []).length;
+
             link.href = '../'.repeat(count - 1).concat('stylesheet.css');
             head.appendChild(link);
             script.src = '../'.repeat(count - 1).concat('base.js');
             head.appendChild(script);
+            icon.href = '../'.repeat(count - 1).concat('favicon-32x32.png');
+            head.appendChild(icon);
         </script>
     </head>
     <body>

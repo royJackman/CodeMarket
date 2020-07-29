@@ -11,8 +11,20 @@ This module is for interacting with the CodeMarket server using python. Do not
 send any sensitive information through these connections.
 """
 
-def base_api_call(url: str, data: dict) -> dict:
-    """Base API call to connect with the market
+def base_api_get(url: str) -> dict:
+    """Base API GET request to get data from the market
+    
+    Args:
+        url   (str):    The url to send the request to
+
+    Returns:
+        dict:   Contains the response content of the call
+    """
+    r = requests.get(BASE_URL + url)
+    return json.loads(r.content.decode())
+
+def base_api_post(url: str, data: dict) -> dict:
+    """Base API POST request to change data in the market
     
     Args:
         url   (str):    The url to send the request to
@@ -25,7 +37,7 @@ def base_api_call(url: str, data: dict) -> dict:
     r = requests.post(BASE_URL + url, data=data, headers=headers)
     return json.loads(r.content.decode())
 
-def get_ledger_state(uuid: str):
+def get_ledger_state(uuid: str) -> dict:
     """Get the current ledger state
     
     Args:
@@ -35,7 +47,23 @@ def get_ledger_state(uuid: str):
         dict:   Contains the current ledger state
     """
     payload = { 'uuid': uuid }
-    return base_api_call('/api/ledger_state', data=payload)
+    return base_api_post('/api/ledger_state', data=payload)
+
+def get_vendor_names() -> dict:
+    """Get a list of registered vendor names
+
+    Returns:
+        dict:   Contains a list of registered vendor names
+    """
+    return base_api_get('/api/vendor_names')
+
+def get_vendor_urls() -> dict:
+    """Get a list of vendor urls
+
+    Returns:
+        dict:   Contains a list of vendor urls
+    """
+    return base_api_get('/api/vendor_urls')
 
 def purchase(item: str, count: int, frm: str, to: str) -> dict:
     """Purchase an item FROM the vendor TO the buyer
@@ -55,7 +83,7 @@ def purchase(item: str, count: int, frm: str, to: str) -> dict:
         'from': frm,
         'to': to
     }
-    return base_api_call('/api/purchase', data=payload)
+    return base_api_post('/api/purchase', data=payload)
 
 def register_vendor(vendor_name: str, vendor_url: Optional[str] = '') -> dict:
     """Register a new vendor with the market
@@ -71,7 +99,7 @@ def register_vendor(vendor_name: str, vendor_url: Optional[str] = '') -> dict:
         'vendor_name': vendor_name,
         'vendor_url': vendor_url
     }
-    return base_api_call('/register', data=payload)
+    return base_api_post('/register', data=payload)
 
 def stock(item: str, price: float, stock: int, uuid: str) -> dict:
     """Stock/store item within your a shop
@@ -93,4 +121,4 @@ def stock(item: str, price: float, stock: int, uuid: str) -> dict:
         'stock': stock,
         'uuid': uuid
     }
-    return base_api_call('/api/stock', data=payload)
+    return base_api_post('/api/stock', data=payload)
