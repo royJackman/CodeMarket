@@ -1,3 +1,6 @@
+use rocket::http::{ContentType, Status};
+use rocket::local::Client;
+use super::*;
 use super::shop::{Item, Vendor};
 
 #[test]
@@ -17,6 +20,36 @@ fn test_new_vendor() {
 }
 
 #[test]
+fn test_register_endpoint() {
+    let rocket = rocket::ignite()
+                        .manage( ledger::MutLedger{session_ledger: Arc::new(RwLock::new(ledger::Ledger::new()))} )
+                        .mount("/", routes![authorization::register]);
+    let client = Client::new(rocket).expect("valid rocket instance");
+    let mut response = client.post("/register")
+                             .body("vendor_name=vendor&vendor_url=vendor")
+                             .header(ContentType::Form)
+                             .dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    assert_eq!(response.content_type(), Some(ContentType::JSON));
+    assert!(response.body_string().unwrap().contains("\"uuid\""));
+}
+
+#[test]
+fn test_register_endpoint_partial() {
+    let rocket = rocket::ignite()
+                        .manage( ledger::MutLedger{session_ledger: Arc::new(RwLock::new(ledger::Ledger::new()))} )
+                        .mount("/", routes![authorization::register]);
+    let client = Client::new(rocket).expect("valid rocket instance");
+    let mut response = client.post("/register")
+                             .body("vendor_name=vendor&vendor_url=")
+                             .header(ContentType::Form)
+                             .dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    assert_eq!(response.content_type(), Some(ContentType::JSON));
+    assert!(response.body_string().unwrap().contains("\"uuid\""));
+}
+
+#[test]
 fn test_vendor_add_item() {
     let v = &mut Vendor::new(String::from("Vendor"), String::from("vendor"), 1000.0);
     v.add_item(Item::new(String::from("f32"), 32.0, 100, 100), false);
@@ -26,17 +59,16 @@ fn test_vendor_add_item() {
 }
 
 #[test]
-#[allow(non_snake_case)]
 fn test_vendor_purchase_item() {
     let v = &mut Vendor::new(String::from("Vendor"), String::from("vendor"), 1000.0);
-    let F32 = String::from("f32");
-    let U8 = String::from("u8");
-    let STR = String::from("str");
-    v.add_item(Item::new(F32.clone(), 32.0, 100, 100), false);
-    v.add_item(Item::new(U8.clone(), 8.0, 100, 100), false);
-    v.add_item(Item::new(STR.clone(), 1.0, 40, 40), false);
-    let _ = v.purchase_item(&U8, 70);
-    let _ = v.purchase_item(&STR, 50);
-    assert_eq!(30, v.get_item(&U8).unwrap().get_count());
-    assert_eq!(0, v.get_item(&STR).unwrap().get_count());
+    let f32 = String::from("f32");
+    let u8 = String::from("u8");
+    let stir = String::from("str");
+    v.add_item(Item::new(f32.clone(), 32.0, 100, 100), false);
+    v.add_item(Item::new(u8.clone(), 8.0, 100, 100), false);
+    v.add_item(Item::new(stir.clone(), 1.0, 40, 40), false);
+    let _ = v.purchase_item(&u8, 70);
+    let _ = v.purchase_item(&stir, 50);
+    assert_eq!(30, v.get_item(&u8).unwrap().get_count());
+    assert_eq!(0, v.get_item(&stir).unwrap().get_count());
 }
