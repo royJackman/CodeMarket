@@ -9,6 +9,7 @@ use std::sync::{Arc, RwLock};
 use super::shop::{Vendor, Item};
 use super::{nanoid, util};
 
+#[derive(Debug)]
 pub enum LedgerError {
     ExistingVendor,
     ExistingUrl,

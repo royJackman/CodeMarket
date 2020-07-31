@@ -3,6 +3,33 @@ use rocket::local::Client;
 use super::*;
 use super::shop::{Item, Vendor};
 
+fn create_test_ledger(generate: usize) -> ledger::MutLedger {
+    let mut session_ledger = ledger::Ledger::new();
+    for _ in 0..generate {
+        let _ = session_ledger.register_vendor(util::name_generator(), None);
+    }
+    ledger::MutLedger{session_ledger: Arc::new(RwLock::new(session_ledger))}
+}
+
+#[test]
+fn test_index_endpoint() {
+    let mut session_ledger = ledger::Ledger::new();
+    session_ledger.register_vendor("test".to_string(), None).expect("vendor registered successfully");
+    let rocket = rocket::ignite()
+                        .manage(create_test_ledger(1))
+                        .mount("/", StaticFiles::from("templates"))
+                        .mount("/", routes![base::index])
+                        .attach(Template::custom(|engines| {
+                            let var = BTreeMap::new();
+                            engines.tera.register_function("get_rust_type_index", tera_functions::make_get_rust_type_index(var.clone()));
+                        }));
+    let client = Client::new(rocket).expect("valid rocket instance");
+    let mut response = client.get("/").dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    assert_eq!(response.content_type(), Some(ContentType::HTML));
+    assert!(response.body_string().unwrap().contains("The Code Market"));
+}
+
 #[test]
 fn test_new_item() {
     let i = Item::new(String::from("test_item"), 1.0, 32, 32);
@@ -22,7 +49,7 @@ fn test_new_vendor() {
 #[test]
 fn test_register_endpoint() {
     let rocket = rocket::ignite()
-                        .manage( ledger::MutLedger{session_ledger: Arc::new(RwLock::new(ledger::Ledger::new()))} )
+                        .manage( create_test_ledger(0) )
                         .mount("/", routes![authorization::register]);
     let client = Client::new(rocket).expect("valid rocket instance");
     let mut response = client.post("/register")
