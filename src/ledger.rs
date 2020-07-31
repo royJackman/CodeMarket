@@ -194,21 +194,22 @@ impl Ledger {
         let max_items = match super::get_config::<usize>("max_items") { Some(mii) => mii, None => 6 };
 
         let mut retval = Vendor::new(name.clone(), url.unwrap(), initial_bits);
+        let mut rng = rand::thread_rng();
+        let num_items = rng.gen_range(min_items, max_items + 1);
         {
             let mut entries = self.entries.write().unwrap();
-            let mut rng = rand::thread_rng();
 
-            for t in util::get_rust_types(rng.gen_range(min_items, max_items + 1)).iter() {
+            for (i, t) in util::get_rust_types(num_items).iter().enumerate() {
                 {
                     self.ledger_items.write().unwrap().insert(t.to_string());
                 }
                 let i1 = Item::new(t.to_string(), 0.0, 0, item_count);
-                entries.push(Entry::new(self.version + 1, retval.name.clone(), i1.name.clone(), i1.get_count() as i32, i1.price));
+                entries.push(Entry::new(self.version + 1 + i as u32, retval.name.clone(), i1.name.clone(), i1.get_count() as i32, i1.price));
                 &retval.add_item(i1, false);
             }
         }
 
-        self.version += 4;
+        self.version += num_items as u32;
 
         self.update_avg_price(util::convert_minimal_to_full(self.calculate_avg_prices()));
 

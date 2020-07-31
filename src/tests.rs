@@ -1,14 +1,17 @@
 use rocket::http::{ContentType, Status};
 use rocket::local::Client;
+use std::collections::HashSet;
+use std::iter::FromIterator;
 use super::*;
 use super::shop::{Item, Vendor};
 
-fn create_test_ledger(generate: usize) -> ledger::MutLedger {
+fn create_test_ledger(generate: usize) -> (ledger::MutLedger, Vec<String>) {
     let mut session_ledger = ledger::Ledger::new();
+    let mut ids = vec![];
     for _ in 0..generate {
-        let _ = session_ledger.register_vendor(util::name_generator(), None);
+        ids.push(session_ledger.register_vendor(util::name_generator(), None).unwrap());
     }
-    ledger::MutLedger{session_ledger: Arc::new(RwLock::new(session_ledger))}
+    (ledger::MutLedger{session_ledger: Arc::new(RwLock::new(session_ledger))}, ids)
 }
 
 #[test]
@@ -16,7 +19,7 @@ fn test_index_endpoint() {
     let mut session_ledger = ledger::Ledger::new();
     session_ledger.register_vendor("test".to_string(), None).expect("vendor registered successfully");
     let rocket = rocket::ignite()
-                        .manage(create_test_ledger(1))
+                        .manage(create_test_ledger(1).0)
                         .mount("/", StaticFiles::from("templates"))
                         .mount("/", routes![base::index])
                         .attach(Template::custom(|engines| {
@@ -28,6 +31,89 @@ fn test_index_endpoint() {
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.content_type(), Some(ContentType::HTML));
     assert!(response.body_string().unwrap().contains("The Code Market"));
+}
+
+#[test]
+fn test_get_item_history() {
+    let mut ledger = ledger::Ledger::new();
+    let _ = ledger.register_vendor("test".to_string(), None);
+    for s in util::get_rust_types(0) {
+        if !ledger.get_ledger_items().contains(&s.to_string()) {
+            assert_eq!(ledger.get_item_history(s.to_string()), vec![0.0]);
+        }
+    }
+}
+
+#[test]
+fn test_get_ledger_items() {
+    let mut ledger = ledger::Ledger::new();
+    let _ = ledger.register_vendor("test".to_string(), None);
+    let vendor_items: Vec<String> = ledger.get_vendor(0)
+                                          .get_items()
+                                          .iter()
+                                          .map(|x| x.name.clone())
+                                          .collect();
+    let ledger_items: Vec<String> = ledger.get_ledger_items();
+    let vi: HashSet<&String> = HashSet::from_iter(vendor_items.iter());
+    let li: HashSet<&String> = HashSet::from_iter(ledger_items.iter());
+    assert_eq!(vi, li);
+}
+
+#[test]
+fn test_get_price_history() {
+    let mut ledger = ledger::Ledger::new();
+    let _ = ledger.register_vendor("test".to_string(), None);
+    let ledger_items: Vec<String> = ledger.get_ledger_items();
+    let price_history = ledger.get_price_history();
+    for rt in util::get_rust_types(0) {
+        if !ledger_items.contains(&rt.to_string()) {
+            assert_eq!(price_history[util::get_rust_type_index(rt.to_string())], vec![0.0]);
+        }
+    }
+}
+
+#[test]
+fn test_get_vendor() {
+    let mut ledger = ledger::Ledger::new();
+    let _ = ledger.register_vendor("test".to_string(), None);
+    let v = ledger.get_vendor(0);
+    assert_eq!("test".to_string(), v.name);
+}
+
+#[test]
+fn test_get_vendors() {
+    let mut ledger = ledger::Ledger::new();
+    let _ = ledger.register_vendor("test".to_string(), None);
+    let _ = ledger.register_vendor("test2".to_string(), None);
+    let vs = ledger.get_vendors();
+    assert_eq!(vs.len(), 2);
+}
+
+#[test]
+fn test_get_vendor_names() {
+    let mut ledger = ledger::Ledger::new();
+    let _ = ledger.register_vendor("test".to_string(), None);
+    let _ = ledger.register_vendor("test2".to_string(), None);
+    let vn = ledger.get_vendor_names();
+    assert!(vn.contains(&"test".to_string()));
+    assert!(vn.contains(&"test2".to_string()));
+}
+
+#[test]
+fn test_get_vendor_urls() {
+    let mut ledger = ledger::Ledger::new();
+    let _ = ledger.register_vendor("test".to_string(), None);
+    let _ = ledger.register_vendor("test2".to_string(), Some("test".to_string()));
+    let vn = ledger.get_vendor_names();
+    assert!(vn.contains(&"test".to_string()));
+    assert_eq!(vn.len(), 1);
+}
+
+#[test]
+fn test_get_version() {
+    let mut ledger = ledger::Ledger::new();
+    let _ = ledger.register_vendor("test".to_string(), None);
+    assert_eq!(ledger.get_version() as usize, ledger.get_ledger_items().len());
 }
 
 #[test]
@@ -47,9 +133,44 @@ fn test_new_vendor() {
 }
 
 #[test]
+fn test_purchase() {
+    let mut ledger = ledger::Ledger::new();
+    let id1 = ledger.register_vendor("test".to_string(), None).unwrap();
+    let v1_items = ledger.get_ledger_items();
+    let id2 = ledger.register_vendor("test2".to_string(), None).unwrap();
+
+    let rocket = rocket::ignite()
+                        .manage(ledger::MutLedger{ session_ledger: Arc::new(RwLock::new(ledger)) })
+                        .mount("/", routes![purchase::http_purchase, shop::http_stock]);
+    let client = Client::new(rocket).expect("valid rocket instance");
+    
+    let mut stock_response = client.post("/stock")
+                                   .body(format!(
+                                       "name={}&price={}&stock={}&uuid={}", 
+                                       v1_items[0].clone(), 1.0, 5, id1.clone()
+                                    ))
+                                   .header(ContentType::Form)
+                                   .dispatch();
+    assert_eq!(stock_response.status(), Status::Ok);
+    assert_eq!(stock_response.content_type(), Some(ContentType::JSON));
+    assert!(stock_response.body_string().unwrap().contains("\"success\": \"true\""));
+
+    let mut purchase_response = client.post("/purchase")
+                                      .body(format!(
+                                          "item={}&count={}&from={}&to={}",
+                                          v1_items[0].clone(), 5, "test", id2
+                                        ))
+                                      .header(ContentType::Form)
+                                      .dispatch();
+    assert_eq!(purchase_response.status(), Status::Ok);
+    assert_eq!(purchase_response.content_type(), Some(ContentType::JSON));
+    assert!(purchase_response.body_string().unwrap().contains("\"success\": \"true\""));
+}
+
+#[test]
 fn test_register_endpoint() {
     let rocket = rocket::ignite()
-                        .manage( create_test_ledger(0) )
+                        .manage( create_test_ledger(0).0 )
                         .mount("/", routes![authorization::register]);
     let client = Client::new(rocket).expect("valid rocket instance");
     let mut response = client.post("/register")
