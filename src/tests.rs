@@ -183,6 +183,15 @@ fn test_register_endpoint() {
 }
 
 #[test]
+fn test_register_vendor() {
+    let mut ledger = ledger::Ledger::new();
+    let _ = ledger.register_vendor("Test Name".to_string(), None);
+    assert!(ledger.get_ledger_items().len() > 0);
+    assert_eq!(ledger.get_vendor_names(), ["Test Name".to_string()]);
+    assert_eq!(ledger.get_vendor_urls(), ["test_name".to_string()]);
+}
+
+#[test]
 fn test_register_endpoint_partial() {
     let rocket = rocket::ignite()
                         .manage( ledger::MutLedger{session_ledger: Arc::new(RwLock::new(ledger::Ledger::new()))} )
@@ -195,6 +204,24 @@ fn test_register_endpoint_partial() {
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.content_type(), Some(ContentType::JSON));
     assert!(response.body_string().unwrap().contains("\"uuid\""));
+}
+
+#[test]
+fn test_serialize_state() {
+    let mut ledger = ledger::Ledger::new();
+    let empty_ledger = HashMap::new();
+    assert_eq!(ledger.serialize_state(), empty_ledger);
+    let _ = ledger.register_vendor("test".to_string(), None);
+    assert!(ledger.serialize_state().contains_key("test"));
+}
+
+#[test]
+fn test_serialize_vendor() {
+    let mut ledger = ledger::Ledger::new();
+    let _ = ledger.register_vendor("test".to_string(), None);
+    let sv = ledger.serialize_vendor(0);
+    assert_eq!(sv.1.len(), 0);
+    assert_eq!(sv.0.len(), sv.2.len());
 }
 
 #[test]
