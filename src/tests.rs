@@ -247,3 +247,18 @@ fn test_vendor_purchase_item() {
     assert_eq!(30, v.get_item(&u8).unwrap().get_count());
     assert_eq!(0, v.get_item(&stir).unwrap().get_count());
 }
+
+#[test]
+fn test_verify_uuid() {
+    let (ledger, ids) = create_test_ledger(3);
+    let arc_ledger = ledger.session_ledger.clone();
+    {
+        let reader = &*arc_ledger.read().unwrap();
+        for i in ids {
+            assert!(match reader.verify_uuid(i) {
+                Ok(_) => true,
+                Err(_) => false
+            } );
+        }
+    }
+}
