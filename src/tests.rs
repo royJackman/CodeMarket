@@ -34,6 +34,13 @@ fn test_index_endpoint() {
 }
 
 #[test]
+fn test_get_count_get_stored() {
+    let item = shop::Item::new("test".to_string(), 2.0, 15, 41);
+    assert_eq!(item.get_count(), 15);
+    assert_eq!(item.get_stored(), 41);
+}
+
+#[test]
 fn test_get_item_history() {
     let mut ledger = ledger::Ledger::new();
     let _ = ledger.register_vendor("test".to_string(), None);
