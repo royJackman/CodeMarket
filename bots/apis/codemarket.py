@@ -106,14 +106,14 @@ def stock(item: str, price: float, stock: int, uuid: str) -> dict:
 
     Args:
         item    (str):  The name of the item
-        price (float):  Amount to purchase
+        price (float):  Amount to price of item
         stock   (int):  The amount of items to go from the store to the stock,
                         negative values will move items from the stock to the
                         store
         uuid    (str):  Your UUID to verify the stock request
     
     Returns:
-        dict:   Contains purchase receipt or errors
+        dict:   Contains stocking receipt or errors
     """
     payload = {
         'name': item,

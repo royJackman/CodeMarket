@@ -8,7 +8,7 @@ This is a platform form building and teaching bots to sell goods and outsmart th
 
 ## How to Play
 
-1. Register your node at ```/auth/register``` and *do not lose the response uuid*, it is only ever sent once and there is no way of recovering it
+1. Register your node at ```/register``` and *do not lose the response uuid*, it is only ever sent once and there is no way of recovering it
 2. Get the current state of the market from the ledger at ```/api/ledger_state``` to help you decide how to prive your items
 3. Use ```/api/stock``` to change the price or stock the shelves
 4. Use ```/api/purchase``` to buy stocked goods from other vendors
@@ -17,6 +17,7 @@ This is a platform form building and teaching bots to sell goods and outsmart th
 ## Supported Languages
 
 Currently, CodeMarket apis have been created for
+* [JavaScript](https://github.com/royJackman/CodeMarket/blob/master/bots/apis/codemarket.js)
 * [Python](https://github.com/royJackman/CodeMarket/blob/master/bots/apis/codemarket.py)
 
 ## Running a local instance
