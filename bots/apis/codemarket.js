@@ -92,7 +92,7 @@ exports.register_vendor = async function(vendor_name, vendor_url = '') {
 
 /**
  * 
- * @param {string} item - The name of the item
+ * @param {string} name - The name of the item
  * @param {float} price - Amount to set price of item
  * @param {integer} stock - The amount of items to go from the store to the 
  *                          stock, negative values will move items from the 
@@ -100,7 +100,7 @@ exports.register_vendor = async function(vendor_name, vendor_url = '') {
  * @param {string} uuid - Your UUID to verify the stock request
  * @returns {object} Contains stocking receipt or errors
  */
-exports.stock = async function(item, price, stock, uuid) {
-    payload = {item, price, stock, uuid};
-    return await exports.base_api_post('/api/stock');
+exports.stock = async function(name, price, stock, uuid) {
+    payload = {name, price, stock, uuid};
+    return await exports.base_api_post('/api/stock', payload);
 };
