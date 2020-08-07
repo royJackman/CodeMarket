@@ -1,4 +1,3 @@
-use rand::Rng;
 use rocket::response::content;
 use rocket::request::{Form, FormError};
 use rocket::State;
@@ -189,17 +188,14 @@ impl Ledger {
         }
 
         let initial_bits = match super::get_config::<f64>("initial_bits") { Some(ib) => ib, None => 1000.0 };
+        let initial_items = match super::get_config::<usize>("initial_items") { Some(ii) => ii, None => 4 };
         let item_count = match super::get_config::<u32>("item_count") { Some(ic) => ic, None => 50 };
-        let min_items = match super::get_config::<usize>("min_items") { Some(mai) => mai, None => 3 };
-        let max_items = match super::get_config::<usize>("max_items") { Some(mii) => mii, None => 6 };
 
         let mut retval = Vendor::new(name.clone(), url.unwrap(), initial_bits);
-        let mut rng = rand::thread_rng();
-        let num_items = rng.gen_range(min_items, max_items + 1);
         {
             let mut entries = self.entries.write().unwrap();
 
-            for (i, t) in util::get_rust_types(num_items).iter().enumerate() {
+            for (i, t) in util::get_rust_types(initial_items).iter().enumerate() {
                 {
                     self.ledger_items.write().unwrap().insert(t.to_string());
                 }
@@ -209,7 +205,7 @@ impl Ledger {
             }
         }
 
-        self.version += num_items as u32;
+        self.version += initial_items as u32;
 
         self.update_avg_price(util::convert_minimal_to_full(self.calculate_avg_prices()));
 
