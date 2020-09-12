@@ -1,6 +1,6 @@
 # CodeMarket v0.1
 
-![Last Commit](https://img.shields.io/github/last-commit/royJackman/CodeMarket) ![Top Language](https://img.shields.io/github/languages/top/royJackman/CodeMarket) ![Languages](https://img.shields.io/github/languages/count/royJackman/CodeMarket) ![Size](https://img.shields.io/github/repo-size/royJackman/CodeMarket)
+![Top Language](https://img.shields.io/github/languages/top/royJackman/CodeMarket) ![Languages](https://img.shields.io/github/languages/count/royJackman/CodeMarket) ![Size](https://img.shields.io/github/repo-size/royJackman/CodeMarket)
 
 ## Welcome to the Code Market!
 
